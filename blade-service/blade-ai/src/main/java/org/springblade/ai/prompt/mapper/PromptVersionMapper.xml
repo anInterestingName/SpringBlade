@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.springblade.ai.prompt.mapper.PromptVersionMapper">
+    <select id="selectTenantVersion" resultType="org.springblade.ai.prompt.entity.PromptVersion">
+        SELECT * FROM blade_ai_prompt_version
+        WHERE tenant_id = #{tenantId} AND prompt_id = #{promptId}
+          AND id = #{versionId} AND is_deleted = 0
+    </select>
+
+    <select id="countTenantVersions" resultType="long">
+        SELECT COUNT(1) FROM blade_ai_prompt_version
+        WHERE tenant_id = #{tenantId} AND prompt_id = #{promptId} AND is_deleted = 0
+    </select>
+</mapper>

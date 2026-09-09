@@ -1,0 +1,16 @@
+# MyBatis-Plus 配置
+mybatis-plus:
+  mapper-locations: classpath:org/springblade/ai/**/mapper/*Mapper.xml
+  typeAliasesPackage: org.springblade.ai.prompt.entity
+
+swagger:
+  base-packages:
+    - org.springblade.ai
+
+blade:
+  ai:
+    prompt:
+      max-fixed-length: 32768
+      max-user-template-length: 32768
+      max-variable-count: 100
+      max-rendered-length: 65535

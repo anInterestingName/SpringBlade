@@ -20,6 +20,7 @@
         <module>blade-log</module>
         <module>blade-system</module>
         <module>blade-demo</module>
+        <module>blade-ai</module>
     </modules>
 
     <dependencies>

@@ -32,10 +32,12 @@ public class LauncherServiceImpl implements LauncherService {
 	@Override
 	public void launcher(SpringApplicationBuilder builder, String appName, String profile) {
 		Properties props = System.getProperties();
-		PropsUtil.setProperty(props, "spring.cloud.nacos.username", LauncherConstant.NACOS_USERNAME);
-		PropsUtil.setProperty(props, "spring.cloud.nacos.password", LauncherConstant.NACOS_PASSWORD);
+//		PropsUtil.setProperty(props, "spring.cloud.nacos.username", LauncherConstant.NACOS_USERNAME);
+//		PropsUtil.setProperty(props, "spring.cloud.nacos.password", LauncherConstant.NACOS_PASSWORD);
 		PropsUtil.setProperty(props, "spring.cloud.nacos.discovery.server-addr", LauncherConstant.nacosAddr(profile));
 		PropsUtil.setProperty(props, "spring.cloud.nacos.config.server-addr", LauncherConstant.nacosAddr(profile));
+		PropsUtil.setProperty(props, "spring.cloud.nacos.config.namespace", LauncherConstant.NACOS_NAMESPACE);
+		PropsUtil.setProperty(props, "spring.cloud.nacos.discovery.namespace", LauncherConstant.NACOS_NAMESPACE);
 		PropsUtil.setProperty(props, "spring.cloud.sentinel.transport.dashboard", LauncherConstant.sentinelAddr(profile));
 	}
 
