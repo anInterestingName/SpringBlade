@@ -141,6 +141,13 @@ services:
     networks:
     - blade_net
 
+  blade-ai:
+    image: "${REGISTER}/blade-ai:${TAG}"
+    privileged: true
+    restart: always
+    networks:
+    - blade_net
+
   blade-resource:
     image: "${REGISTER}/blade-resource:${TAG}"
     privileged: true

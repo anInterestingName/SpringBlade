@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.springblade.ai.prompt.mapper.PromptMapper">
+
+    <select id="selectTenantPrompt" resultType="org.springblade.ai.prompt.entity.Prompt">
+        SELECT * FROM blade_ai_prompt
+        WHERE tenant_id = #{tenantId} AND id = #{id} AND is_deleted = 0
+    </select>
+
+    <select id="selectTenantPromptByCode" resultType="org.springblade.ai.prompt.entity.Prompt">
+        SELECT * FROM blade_ai_prompt
+        WHERE tenant_id = #{tenantId} AND prompt_code = #{code} AND is_deleted = 0
+    </select>
+
+    <select id="selectTenantPromptByCodeIncludingDeleted" resultType="org.springblade.ai.prompt.entity.Prompt">
+        SELECT * FROM blade_ai_prompt
+        WHERE tenant_id = #{tenantId} AND prompt_code = #{code}
+        LIMIT 1
+    </select>
+
+    <select id="selectForUpdate" resultType="org.springblade.ai.prompt.entity.Prompt">
+        SELECT * FROM blade_ai_prompt
+        WHERE tenant_id = #{tenantId} AND id = #{id} AND is_deleted = 0
+        FOR UPDATE
+    </select>
+
+    <update id="updateDraft">
+        UPDATE blade_ai_prompt
+        SET prompt_name = #{prompt.promptName},
+            fixed_instruction = #{prompt.fixedInstruction},
+            user_template = #{prompt.userTemplate},
+            variable_schema = #{prompt.variableSchema},
+            draft_revision = draft_revision + 1,
+            draft_dirty = 1,
+            lock_version = lock_version + 1,
+            update_user = #{prompt.updateUser},
+            update_time = NOW()
+        WHERE tenant_id = #{tenantId} AND id = #{prompt.id}
+          AND lock_version = #{expectedLockVersion} AND is_deleted = 0
+    </update>
+
+    <update id="updatePublishedState">
+        UPDATE blade_ai_prompt
+        SET current_version_id = #{versionId}, current_version_no = #{versionNo},
+            status = 1, draft_dirty = #{draftDirty}, lock_version = lock_version + 1,
+            update_user = #{updateUser}, update_time = NOW()
+        WHERE tenant_id = #{tenantId} AND id = #{id}
+          AND lock_version = #{expectedLockVersion} AND is_deleted = 0
+    </update>
+
+    <update id="updateDisabledState">
+        UPDATE blade_ai_prompt
+        SET status = 2, lock_version = lock_version + 1,
+            update_user = #{updateUser}, update_time = NOW()
+        WHERE tenant_id = #{tenantId} AND id = #{id}
+          AND lock_version = #{expectedLockVersion} AND is_deleted = 0
+    </update>
+
+    <update id="logicalDelete">
+        UPDATE blade_ai_prompt
+        SET is_deleted = 1, lock_version = lock_version + 1,
+            update_user = #{updateUser}, update_time = NOW()
+        WHERE tenant_id = #{tenantId} AND id = #{id}
+          AND lock_version = #{expectedLockVersion} AND is_deleted = 0
+    </update>
+</mapper>

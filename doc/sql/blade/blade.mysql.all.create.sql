@@ -681,4 +681,79 @@ CREATE TABLE `blade_user_oauth`  (
 BEGIN;
 COMMIT;
 
+-- ----------------------------
+-- REQ-2026-001 prompt management
+-- ----------------------------
+DROP TABLE IF EXISTS blade_ai_prompt;
+CREATE TABLE blade_ai_prompt (
+  id bigint NOT NULL COMMENT '主键',
+  prompt_code varchar(64) NOT NULL COMMENT '稳定编码',
+  prompt_name varchar(100) NOT NULL COMMENT '提示词名称',
+  fixed_instruction text NULL COMMENT '当前草稿固定指令',
+  user_template text NULL COMMENT '当前草稿用户输入模板',
+  variable_schema text NOT NULL COMMENT '当前草稿变量定义JSON',
+  draft_revision bigint NOT NULL DEFAULT 1 COMMENT '草稿修订号',
+  draft_dirty tinyint NOT NULL DEFAULT 1 COMMENT '是否存在未发布草稿',
+  current_version_id bigint NULL DEFAULT NULL COMMENT '当前发布版本ID',
+  current_version_no int NOT NULL DEFAULT 0 COMMENT '当前发布版本号',
+  lock_version bigint NOT NULL DEFAULT 0 COMMENT '并发控制版本',
+  status int NOT NULL DEFAULT 0 COMMENT '0草稿 1已发布 2已停用',
+  tenant_id varchar(12) NOT NULL DEFAULT '000000' COMMENT '租户ID',
+  create_user bigint NULL DEFAULT NULL COMMENT '创建人',
+  create_dept bigint NULL DEFAULT NULL COMMENT '创建部门',
+  create_time datetime NULL DEFAULT NULL COMMENT '创建时间',
+  update_user bigint NULL DEFAULT NULL COMMENT '修改人',
+  update_time datetime NULL DEFAULT NULL COMMENT '修改时间',
+  is_deleted int NOT NULL DEFAULT 0 COMMENT '是否已删除',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_blade_ai_prompt_tenant_code (tenant_id, prompt_code),
+  KEY idx_blade_ai_prompt_tenant_status (tenant_id, status, is_deleted),
+  KEY idx_blade_ai_prompt_tenant_name (tenant_id, prompt_name, is_deleted),
+  KEY idx_blade_ai_prompt_current_version (tenant_id, current_version_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='AI提示词';
+
+DROP TABLE IF EXISTS blade_ai_prompt_version;
+CREATE TABLE blade_ai_prompt_version (
+  id bigint NOT NULL COMMENT '主键',
+  prompt_id bigint NOT NULL COMMENT '提示词ID',
+  version_no int NOT NULL COMMENT '版本号',
+  prompt_code varchar(64) NOT NULL COMMENT '稳定编码快照',
+  prompt_name varchar(100) NOT NULL COMMENT '名称快照',
+  fixed_instruction text NULL COMMENT '固定指令快照',
+  user_template text NULL COMMENT '用户模板快照',
+  variable_schema text NOT NULL COMMENT '变量定义快照JSON',
+  source_type int NOT NULL DEFAULT 1 COMMENT '1普通发布 2回滚发布',
+  source_version_id bigint NULL DEFAULT NULL COMMENT '回滚来源版本ID',
+  source_draft_revision bigint NULL DEFAULT NULL COMMENT '来源草稿修订号',
+  content_hash char(64) NOT NULL COMMENT '快照SHA-256',
+  change_note varchar(500) NOT NULL COMMENT '变更说明',
+  publish_user bigint NOT NULL COMMENT '发布人',
+  publish_time datetime NOT NULL COMMENT '发布时间',
+  status int NOT NULL DEFAULT 1 COMMENT '状态',
+  tenant_id varchar(12) NOT NULL DEFAULT '000000' COMMENT '租户ID',
+  create_user bigint NULL DEFAULT NULL COMMENT '创建人',
+  create_dept bigint NULL DEFAULT NULL COMMENT '创建部门',
+  create_time datetime NULL DEFAULT NULL COMMENT '创建时间',
+  update_user bigint NULL DEFAULT NULL COMMENT '修改人',
+  update_time datetime NULL DEFAULT NULL COMMENT '修改时间',
+  is_deleted int NOT NULL DEFAULT 0 COMMENT '是否已删除',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_blade_ai_prompt_version_no (tenant_id, prompt_id, version_no),
+  KEY idx_blade_ai_prompt_version_time (tenant_id, prompt_id, publish_time),
+  KEY idx_blade_ai_prompt_version_code (tenant_id, prompt_code),
+  KEY idx_blade_ai_prompt_version_source (tenant_id, source_version_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='AI提示词发布版本';
+
+INSERT INTO blade_scope_api (id, menu_id, resource_code, scope_name, scope_path, scope_type, remark, status, is_deleted) VALUES
+(220260909000000001, NULL, 'ai:prompt:view', '提示词查看', '/blade-ai/prompt', 2, '提示词列表、详情和版本查询', 1, 0),
+(220260909000000002, NULL, 'ai:prompt:create', '提示词新增', '/blade-ai/prompt/create', 2, '创建提示词草稿', 1, 0),
+(220260909000000003, NULL, 'ai:prompt:edit', '提示词编辑', '/blade-ai/prompt/update', 2, '编辑提示词草稿', 1, 0),
+(220260909000000004, NULL, 'ai:prompt:copy', '提示词复制', '/blade-ai/prompt/copy', 2, '复制提示词草稿', 1, 0),
+(220260909000000005, NULL, 'ai:prompt:delete', '提示词删除', '/blade-ai/prompt/remove', 2, '删除从未发布的草稿', 1, 0),
+(220260909000000006, NULL, 'ai:prompt:preview', '提示词预览', '/blade-ai/prompt/preview', 2, '无状态模板预览', 1, 0),
+(220260909000000007, NULL, 'ai:prompt:publish', '提示词发布', '/blade-ai/prompt/publish', 2, '发布不可变版本', 1, 0),
+(220260909000000008, NULL, 'ai:prompt:disable', '提示词停用', '/blade-ai/prompt/disable', 2, '停用当前发布提示词', 1, 0),
+(220260909000000009, NULL, 'ai:prompt:rollback', '提示词回滚', '/blade-ai/prompt/rollback', 2, '基于历史版本生成新版本', 1, 0),
+(220260909000000010, NULL, 'ai:prompt:runtime', '提示词运行时读取', '/feign/client/prompt/render', 2, '内部业务服务运行时渲染', 1, 0);
+
 SET FOREIGN_KEY_CHECKS = 1;
