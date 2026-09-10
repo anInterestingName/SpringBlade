@@ -15,7 +15,7 @@
 
 | 年份 | 下一个编号 | 最后分配日期 | 维护人 |
 | --- | --- | --- | --- |
-| 2026 | `REQ-2026-002` | 2026-09-08 | Codex |
+| 2026 | `REQ-2026-003` | 2026-09-09 | Codex |
 
 > 分配编号后立即将“下一个编号”加一。
 
@@ -24,6 +24,7 @@
 | 需求编号 | 需求名称 | 模块 | 版本 | 状态 | 需求文档 | 数据库设计 | 详细设计 | 测试文档 | 负责人 | 最后更新 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [REQ-2026-001](requirements/REQ-2026-001-prompt-management.md) | 提示词管理 | AI 提示词管理、内部业务调用 | 0.3 | 开发中 | [需求文档 0.3](requirements/REQ-2026-001-prompt-management.md) | [数据库设计 0.5](database/DB-REQ-2026-001-prompt-management.md) | [详细设计 0.4](design/DESIGN-REQ-2026-001-prompt-management.md) | [测试文档 0.1](test/TEST-REQ-2026-001-prompt-management.md) | 待指定 | 2026-09-09 |
+| [REQ-2026-002](requirements/REQ-2026-002-tag-category-management.md) | 标签分类管理 | 标签分类管理、租户共享基础数据 | 0.3 | 开发中 | [需求文档 0.3](requirements/REQ-2026-002-tag-category-management.md) | [数据库设计 0.3](database/DB-REQ-2026-002-tag-category-management.md) | [详细设计 0.3](design/DESIGN-REQ-2026-002-tag-category-management.md) | [测试文档 0.2](test/TEST-REQ-2026-002-tag-category-management.md) | 待指定 | 2026-09-10 |
 
 ## 状态说明
 

@@ -1,0 +1,34 @@
+/**
+ * Copyright (c) 2018-2099, Chill Zhuang 庄骞 (bladejava@qq.com).
+ * Licensed under the Apache License, Version 2.0.
+ */
+package org.springblade.system.vo;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import lombok.Data;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+/** 标签管理树节点。 @author BladeX */
+@Data
+public class TagTreeVO implements Serializable {
+	@Serial private static final long serialVersionUID = 1L;
+	@JsonSerialize(using = ToStringSerializer.class) private Long id;
+	@JsonSerialize(using = ToStringSerializer.class) private Long categoryId;
+	@JsonSerialize(using = ToStringSerializer.class) private Long parentId;
+	private String ancestors;
+	private String tagCode;
+	private String tagName;
+	private Integer depth;
+	private Integer sort;
+	private String remark;
+	private Integer status;
+	private String statusName;
+	@JsonSerialize(using = ToStringSerializer.class) private Long lockVersion;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) private List<TagTreeVO> children = new ArrayList<>();
+}

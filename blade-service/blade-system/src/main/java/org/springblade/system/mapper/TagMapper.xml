@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.springblade.system.mapper.TagMapper">
+
+    <select id="selectTagPage" resultType="org.springblade.system.vo.TagListVO">
+        SELECT id, category_id, parent_id, depth, tag_code, tag_name, sort, status,
+               create_time, update_time, lock_version
+        FROM blade_tag
+        WHERE tenant_id = #{tenantId} AND is_deleted = 0
+        <if test="categoryId != null">AND category_id = #{categoryId}</if>
+        <if test="parentId != null">AND parent_id = #{parentId}</if>
+        <if test="name != null and name != ''">AND tag_name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="code != null and code != ''">AND tag_code LIKE CONCAT('%', #{code}, '%')</if>
+        <if test="status != null">AND status = #{status}</if>
+        ORDER BY sort ASC, create_time ASC, id ASC
+    </select>
+
+    <select id="selectTenantTag" resultType="org.springblade.system.entity.TagDefinition">
+        SELECT * FROM blade_tag
+        WHERE tenant_id = #{tenantId} AND id = #{id} AND is_deleted = 0
+    </select>
+
+    <select id="selectByCodeIncludingDeleted" resultType="org.springblade.system.entity.TagDefinition">
+        SELECT * FROM blade_tag
+        WHERE tenant_id = #{tenantId} AND category_id = #{categoryId} AND tag_code = #{code}
+        LIMIT 1
+    </select>
+
+    <select id="selectForUpdate" resultType="org.springblade.system.entity.TagDefinition">
+        SELECT * FROM blade_tag
+        WHERE tenant_id = #{tenantId} AND id = #{id} AND is_deleted = 0
+        FOR UPDATE
+    </select>
+
+    <select id="selectByCategory" resultType="org.springblade.system.entity.TagDefinition">
+        SELECT * FROM blade_tag
+        WHERE tenant_id = #{tenantId} AND category_id = #{categoryId} AND is_deleted = 0
+        ORDER BY sort ASC, create_time ASC, id ASC
+    </select>
+
+    <select id="countChildren" resultType="long">
+        SELECT COUNT(1) FROM blade_tag
+        WHERE tenant_id = #{tenantId} AND category_id = #{categoryId}
+          AND parent_id = #{parentId} AND is_deleted = 0
+    </select>
+
+    <update id="updateTag">
+        UPDATE blade_tag
+        SET parent_id = #{tag.parentId}, ancestors = #{tag.ancestors}, depth = #{tag.depth},
+            tag_name = #{tag.tagName}, sort = #{tag.sort}, remark = #{tag.remark},
+            lock_version = lock_version + 1, update_user = #{updateUser}, update_time = NOW()
+        WHERE tenant_id = #{tenantId} AND category_id = #{tag.categoryId} AND id = #{tag.id}
+          AND lock_version = #{expectedLockVersion} AND is_deleted = 0
+    </update>
+
+    <update id="updateStructure">
+        UPDATE blade_tag
+        SET ancestors = #{ancestors}, depth = #{depth}, lock_version = lock_version + 1,
+            update_user = #{updateUser}, update_time = NOW()
+        WHERE tenant_id = #{tenantId} AND category_id = #{categoryId}
+          AND id = #{id} AND lock_version = #{expectedLockVersion} AND is_deleted = 0
+    </update>
+
+    <update id="updateStatus">
+        UPDATE blade_tag
+        SET status = #{status}, lock_version = lock_version + 1,
+            update_user = #{updateUser}, update_time = NOW()
+        WHERE tenant_id = #{tenantId} AND category_id = #{categoryId} AND id = #{id}
+          AND lock_version = #{expectedLockVersion} AND is_deleted = 0
+    </update>
+
+    <update id="logicalDelete">
+        UPDATE blade_tag
+        SET is_deleted = 1, lock_version = lock_version + 1,
+            update_user = #{updateUser}, update_time = NOW()
+        WHERE tenant_id = #{tenantId} AND category_id = #{categoryId} AND id = #{id}
+          AND lock_version = #{expectedLockVersion} AND is_deleted = 0
+    </update>
+</mapper>

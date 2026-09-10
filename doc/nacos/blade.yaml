@@ -101,4 +101,6 @@ blade:
       - blade_notice
       - blade_ai_prompt
       - blade_ai_prompt_version
+      - blade_tag_category
+      - blade_tag
 
