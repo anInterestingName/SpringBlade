@@ -36,6 +36,7 @@ import org.springblade.core.tool.constant.RoleConstant;
 import org.springblade.core.tool.support.Kv;
 import org.springblade.core.tool.utils.Func;
 import org.springblade.system.entity.Tenant;
+import org.springblade.system.service.ITenantProvisionService;
 import org.springblade.system.service.ITenantService;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,6 +57,7 @@ import java.util.Map;
 public class TenantController extends BladeController {
 
 	private ITenantService tenantService;
+	private ITenantProvisionService tenantProvisionService;
 
 	/**
 	 * 详情
@@ -109,7 +111,7 @@ public class TenantController extends BladeController {
 	@Operation(summary = "新增或修改", description = "传入tenant")
 	@PreAuth(RoleConstant.HAS_ROLE_ADMINISTRATOR)
 	public R submit(@Valid @RequestBody Tenant tenant) {
-		return R.status(tenantService.saveTenant(tenant));
+		return R.status(tenantProvisionService.saveTenant(tenant));
 	}
 
 

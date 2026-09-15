@@ -15,7 +15,7 @@
 
 | 年份 | 下一个编号 | 最后分配日期 | 维护人 |
 | --- | --- | --- | --- |
-| 2026 | `REQ-2026-003` | 2026-09-09 | Codex |
+| 2026 | `REQ-2026-004` | 2026-09-14 | Codex |
 
 > 分配编号后立即将“下一个编号”加一。
 
@@ -25,6 +25,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [REQ-2026-001](requirements/REQ-2026-001-prompt-management.md) | 提示词管理 | AI 提示词管理、内部业务调用 | 0.3 | 开发中 | [需求文档 0.3](requirements/REQ-2026-001-prompt-management.md) | [数据库设计 0.5](database/DB-REQ-2026-001-prompt-management.md) | [详细设计 0.4](design/DESIGN-REQ-2026-001-prompt-management.md) | [测试文档 0.1](test/TEST-REQ-2026-001-prompt-management.md) | 待指定 | 2026-09-09 |
 | [REQ-2026-002](requirements/REQ-2026-002-tag-category-management.md) | 标签分类管理 | 标签分类管理、租户共享基础数据 | 0.3 | 开发中 | [需求文档 0.3](requirements/REQ-2026-002-tag-category-management.md) | [数据库设计 0.3](database/DB-REQ-2026-002-tag-category-management.md) | [详细设计 0.3](design/DESIGN-REQ-2026-002-tag-category-management.md) | [测试文档 0.2](test/TEST-REQ-2026-002-tag-category-management.md) | 待指定 | 2026-09-10 |
+| [REQ-2026-003](requirements/REQ-2026-003-user-registration.md) | 用户自助注册 | 认证授权、用户管理、Saber 登录 | 0.5 | 开发中 | [需求文档 0.5](requirements/REQ-2026-003-user-registration.md) | [数据库设计 0.4](database/DB-REQ-2026-003-user-registration.md) | [详细设计 0.5](design/DESIGN-REQ-2026-003-user-registration.md) | [测试文档 0.4](test/TEST-REQ-2026-003-user-registration.md) | 待指定 | 2026-09-15 |
 
 ## 状态说明
 

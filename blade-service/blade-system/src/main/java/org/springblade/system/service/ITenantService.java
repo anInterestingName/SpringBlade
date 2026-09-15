@@ -48,12 +48,12 @@ public interface ITenantService extends BaseService<Tenant> {
 	Tenant getByTenantId(String tenantId);
 
 	/**
-	 * 新增
+	 * 根据租户编号获取有效租户。
 	 *
-	 * @param tenant 租户实体
-	 * @return 是否成功
+	 * @param tenantId 租户编号
+	 * @return 启用且未删除的租户实体
 	 */
-	boolean saveTenant(Tenant tenant);
+	Tenant getActiveByTenantId(String tenantId);
 
 	/**
 	 * 删除租户并清理缓存

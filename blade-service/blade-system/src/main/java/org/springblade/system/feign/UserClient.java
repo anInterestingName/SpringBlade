@@ -17,8 +17,11 @@ package org.springblade.system.feign;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.AllArgsConstructor;
+import org.springblade.core.log.exception.ServiceException;
 import org.springblade.core.tool.api.R;
 import org.springblade.system.service.IUserService;
+import org.springblade.system.user.constant.RegisterResultCode;
+import org.springblade.system.user.dto.UserRegisterCommand;
 import org.springblade.system.user.entity.UserInfo;
 import org.springblade.system.user.entity.UserOauth;
 import org.springblade.system.user.feign.IUserClient;
@@ -53,6 +56,19 @@ public class UserClient implements IUserClient {
 	@PostMapping(API_PREFIX + "/user-auth-info")
 	public R<UserInfo> userAuthInfo(UserOauth userOauth) {
 		return R.data(service.userInfo(userOauth));
+	}
+
+	@Override
+	@PostMapping(API_PREFIX + "/register")
+	public R<Boolean> register(UserRegisterCommand command) {
+		try {
+			return service.register(command) ? R.data(Boolean.TRUE) : R.fail(RegisterResultCode.REGISTER_FAILED);
+		} catch (ServiceException exception) {
+			if (exception.getResultCode() != null) {
+				return R.fail(exception.getResultCode());
+			}
+			return R.fail(RegisterResultCode.REGISTER_FAILED);
+		}
 	}
 
 }

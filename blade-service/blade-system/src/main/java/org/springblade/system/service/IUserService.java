@@ -23,6 +23,7 @@ import org.springblade.core.mp.support.Query;
 import org.springblade.system.user.entity.User;
 import org.springblade.system.user.entity.UserInfo;
 import org.springblade.system.user.entity.UserOauth;
+import org.springblade.system.user.dto.UserRegisterCommand;
 import org.springblade.system.user.vo.UserVO;
 import org.springblade.system.excel.UserExcel;
 
@@ -201,4 +202,12 @@ public interface IUserService extends BaseService<User> {
 	 * @return 是否成功
 	 */
 	boolean registerGuest(User user, Long oauthId);
+
+	/**
+	 * 创建自助注册用户。
+	 *
+	 * @param command 认证服务传递的受控注册命令
+	 * @return 是否成功
+	 */
+	boolean register(UserRegisterCommand command);
 }

@@ -406,6 +406,12 @@ docker-compose rm -sf nacos && docker-compose up -d nacos
 
 > **本方案以网关路径隔离为准**:全部 Feign 接口已统一落在 `feign` 保留段下,网关对外拦截即可挡住所有经网关的外部访问,无需在接口上额外加注解或做请求头处理。其防护边界在网关入口——绕过网关、直连微服务实例的调用不在拦截范围,故仍以「微服务只部署在内网、对外仅暴露网关」为前提。**因此凡是接受外部可控标识入参的 Feign 接口,服务侧仍必须自行做归属与租户校验,不可把网关拦截当作唯一防线**;若要覆盖「直连微服务」场景的纵深防御,可另行在服务侧增加内部标记校验。
 
+### 5.7 Nacos 动态刷新排除基础设施 Bean
+
+Spring Cloud 5.0.2 收到 Nacos 配置变更后会重绑已登记的 `@ConfigurationProperties` Bean。Druid Boot 4 的 `DruidDataSourceWrapper` 也在该集合中,重绑过程会销毁连接池并把属性重置为默认值,可能与 Druid 创建连接线程并发,表现为 `driver is null`；Spring Boot Admin 的 `InstanceDiscoveryListener` 则会因没有无参构造器产生重置告警。
+
+`blade-common` 的统一启动扩展通过 `spring.cloud.refresh.never-refreshable` 排除 Hikari、Druid、Druid Boot 4 包装类、Gateway 限流过滤器工厂、Redis 限流器和 Admin 发现监听器。该属性必须在应用建立 Nacos 动态监听前生效,且显式配置会覆盖 Spring Cloud 的默认值,因此不可遗漏默认的 `com.zaxxer.hikari.HikariDataSource`。数据源连接地址、账号等配置不再支持运行期重绑；变更这些配置后应重启对应服务。
+
 ---
 
 ## 6. 编译验证

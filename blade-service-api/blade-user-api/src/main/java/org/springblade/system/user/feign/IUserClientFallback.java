@@ -16,6 +16,7 @@
 package org.springblade.system.user.feign;
 
 import org.springblade.core.tool.api.R;
+import org.springblade.system.user.dto.UserRegisterCommand;
 import org.springblade.system.user.entity.UserInfo;
 import org.springblade.system.user.entity.UserOauth;
 import org.springframework.stereotype.Component;
@@ -41,6 +42,11 @@ public class IUserClientFallback implements IUserClient {
 	@Override
 	public R<UserInfo> userAuthInfo(UserOauth userOauth) {
 		return R.fail("未获取到账号信息");
+	}
+
+	@Override
+	public R<Boolean> register(UserRegisterCommand command) {
+		return R.fail("用户注册服务不可用");
 	}
 
 }

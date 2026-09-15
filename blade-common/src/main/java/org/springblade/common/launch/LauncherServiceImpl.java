@@ -29,6 +29,15 @@ import java.util.Properties;
  */
 public class LauncherServiceImpl implements LauncherService {
 
+	private static final String NEVER_REFRESHABLE = String.join(",",
+		"com.zaxxer.hikari.HikariDataSource",
+		"com.alibaba.druid.pool.DruidDataSource",
+		"com.alibaba.druid.spring.boot4.autoconfigure.DruidDataSourceWrapper",
+		"org.springframework.cloud.gateway.filter.factory.RequestRateLimiterGatewayFilterFactory",
+		"org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter",
+		"de.codecentric.boot.admin.server.cloud.discovery.InstanceDiscoveryListener"
+	);
+
 	@Override
 	public void launcher(SpringApplicationBuilder builder, String appName, String profile) {
 		Properties props = System.getProperties();
@@ -38,6 +47,7 @@ public class LauncherServiceImpl implements LauncherService {
 		PropsUtil.setProperty(props, "spring.cloud.nacos.config.server-addr", LauncherConstant.nacosAddr(profile));
 		PropsUtil.setProperty(props, "spring.cloud.nacos.config.namespace", LauncherConstant.NACOS_NAMESPACE);
 		PropsUtil.setProperty(props, "spring.cloud.nacos.discovery.namespace", LauncherConstant.NACOS_NAMESPACE);
+		PropsUtil.setProperty(props, "spring.cloud.refresh.never-refreshable", NEVER_REFRESHABLE);
 		PropsUtil.setProperty(props, "spring.cloud.sentinel.transport.dashboard", LauncherConstant.sentinelAddr(profile));
 	}
 
