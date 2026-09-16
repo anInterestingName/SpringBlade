@@ -1,7 +1,7 @@
 -- REQ-2026-001 / REQ-2026-009 提示词菜单与权限初始化
 -- 适用范围：提示词业务表和 blade_scope_api 基础数据已经部署的环境。
 -- 默认授权：仅授权 000000 租户的 administrator 角色，不授权普通租户管理员。
--- 数据权限：提示词按 tenant_id 隔离，不新增 blade_scope_data / 数据权限授权。
+-- 数据权限：REQ-2026-005 通过独立升级脚本初始化提示词 OWN/ALL DataScope，本脚本只维护菜单与 API Scope。
 
 START TRANSACTION;
 
@@ -85,6 +85,14 @@ SET @prompt_menu_id = (
   ORDER BY is_deleted, id
   LIMIT 1
 );
+
+UPDATE blade_scope_data
+SET menu_id = @prompt_menu_id
+WHERE resource_code IN (
+  'ai:prompt:data:page:own', 'ai:prompt:data:page:all',
+  'ai:prompt:data:resource:own', 'ai:prompt:data:resource:all'
+)
+  AND @prompt_menu_id IS NOT NULL;
 
 -- 统一已有提示词菜单的父级和页面路径。
 UPDATE blade_menu

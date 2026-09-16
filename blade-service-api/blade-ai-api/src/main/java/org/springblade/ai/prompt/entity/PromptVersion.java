@@ -60,6 +60,9 @@ public class PromptVersion extends TenantEntity {
 	@Schema(description = "名称快照")
 	private String promptName;
 
+	@Schema(description = "提示词类型快照")
+	private String promptType;
+
 	@Schema(description = "固定指令快照")
 	private String fixedInstruction;
 

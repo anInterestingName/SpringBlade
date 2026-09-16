@@ -19,28 +19,29 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 发布版本来源。
+ * 提示词发布方式。
  *
  * @author BladeX
  */
 @Getter
 @AllArgsConstructor
-public enum VersionSourceType {
-	PUBLISH(1, "手工发布"),
-	ROLLBACK(2, "回滚发布"),
-	AUTO_PUBLISH(3, "自动发布");
+public enum PublishMode {
+
+	MANUAL(1, "普通发布"),
+	AUTO(2, "自动发布");
 
 	private final int value;
 	private final String label;
 
-	public static VersionSourceType of(Integer value) {
+	public static PublishMode of(Integer value) {
 		if (value != null) {
-			for (VersionSourceType sourceType : values()) {
-				if (sourceType.value == value) {
-					return sourceType;
+			for (PublishMode mode : values()) {
+				if (mode.value == value) {
+					return mode;
 				}
 			}
 		}
-		return PUBLISH;
+		return null;
 	}
+
 }

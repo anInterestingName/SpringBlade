@@ -17,6 +17,7 @@ package org.springblade.ai.prompt.engine;
 
 import lombok.RequiredArgsConstructor;
 import org.springblade.ai.config.PromptProperties;
+import org.springblade.ai.prompt.enums.PromptType;
 import org.springblade.ai.prompt.vo.PromptMessageVO;
 import org.springblade.ai.prompt.vo.PromptRenderVO;
 import org.springblade.ai.prompt.vo.PromptValidationIssueVO;
@@ -33,10 +34,13 @@ public class PromptTemplateRenderer {
 	private static final Pattern TOKEN = Pattern.compile("\\{\\{([A-Za-z][A-Za-z0-9_]{0,63})}}", Pattern.DOTALL);
 	private final PromptProperties properties;
 
-	public PromptRenderVO render(String code, Long versionId, Integer versionNo, String fixed, String user,
+	public PromptRenderVO render(String code, String promptType, Long versionId, Integer versionNo, String fixed, String user,
 		PromptValidationResult validation) {
 		PromptRenderVO result = new PromptRenderVO();
 		result.setPromptCode(code);
+		PromptType type = PromptType.of(promptType);
+		result.setPromptType(promptType);
+		result.setPromptTypeName(type == null ? null : type.getLabel());
 		result.setVersionId(versionId);
 		result.setVersionNo(versionNo);
 		result.setReferencedVariables(validation.getReferences().stream().toList());

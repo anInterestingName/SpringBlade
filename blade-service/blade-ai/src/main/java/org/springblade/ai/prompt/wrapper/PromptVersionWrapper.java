@@ -18,6 +18,8 @@ package org.springblade.ai.prompt.wrapper;
 import lombok.RequiredArgsConstructor;
 import org.springblade.ai.prompt.engine.PromptSchemaCodec;
 import org.springblade.ai.prompt.entity.PromptVersion;
+import org.springblade.ai.prompt.enums.PromptType;
+import org.springblade.ai.prompt.enums.VersionSourceType;
 import org.springblade.ai.prompt.vo.PromptVersionVO;
 import org.springframework.stereotype.Component;
 
@@ -37,10 +39,14 @@ public class PromptVersionWrapper {
 		vo.setVersionNo(version.getVersionNo());
 		vo.setPromptCode(version.getPromptCode());
 		vo.setPromptName(version.getPromptName());
+		PromptType type = PromptType.of(version.getPromptType());
+		vo.setPromptType(version.getPromptType());
+		vo.setPromptTypeName(type == null ? null : type.getLabel());
 		vo.setFixedInstruction(version.getFixedInstruction());
 		vo.setUserTemplate(version.getUserTemplate());
 		vo.setVariables(schemaCodec.decode(version.getVariableSchema()));
 		vo.setSourceType(version.getSourceType());
+		vo.setSourceTypeName(VersionSourceType.of(version.getSourceType()).getLabel());
 		vo.setSourceVersionId(version.getSourceVersionId());
 		vo.setSourceDraftRevision(version.getSourceDraftRevision());
 		vo.setContentHash(version.getContentHash());

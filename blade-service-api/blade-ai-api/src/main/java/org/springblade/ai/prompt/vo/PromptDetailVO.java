@@ -33,6 +33,10 @@ public class PromptDetailVO implements Serializable {
 	@JsonSerialize(using = ToStringSerializer.class) private Long id;
 	private String promptCode;
 	private String promptName;
+	private String promptType;
+	private String promptTypeName;
+	private Integer publishMode;
+	private String publishModeName;
 	private String fixedInstruction;
 	private String userTemplate;
 	private List<PromptVariableDTO> variables = new ArrayList<>();

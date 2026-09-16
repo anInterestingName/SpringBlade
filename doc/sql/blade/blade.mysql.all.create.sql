@@ -721,6 +721,8 @@ CREATE TABLE blade_ai_prompt (
   id bigint NOT NULL COMMENT '主键',
   prompt_code varchar(64) NOT NULL COMMENT '稳定编码',
   prompt_name varchar(100) NOT NULL COMMENT '提示词名称',
+  prompt_type varchar(32) NOT NULL DEFAULT 'GENERAL' COMMENT '提示词业务类型',
+  publish_mode tinyint NOT NULL DEFAULT 1 COMMENT '发布方式:1手工发布,2自动发布',
   fixed_instruction text NULL COMMENT '当前草稿固定指令',
   user_template text NULL COMMENT '当前草稿用户输入模板',
   variable_schema text NOT NULL COMMENT '当前草稿变量定义JSON',
@@ -731,7 +733,7 @@ CREATE TABLE blade_ai_prompt (
   lock_version bigint NOT NULL DEFAULT 0 COMMENT '并发控制版本',
   status int NOT NULL DEFAULT 0 COMMENT '0草稿 1已发布 2已停用',
   tenant_id varchar(12) NOT NULL DEFAULT '000000' COMMENT '租户ID',
-  create_user bigint NULL DEFAULT NULL COMMENT '创建人',
+  create_user bigint NOT NULL COMMENT '创建人/数据所有者',
   create_dept bigint NULL DEFAULT NULL COMMENT '创建部门',
   create_time datetime NULL DEFAULT NULL COMMENT '创建时间',
   update_user bigint NULL DEFAULT NULL COMMENT '修改人',
@@ -741,7 +743,9 @@ CREATE TABLE blade_ai_prompt (
   UNIQUE KEY uk_blade_ai_prompt_tenant_code (tenant_id, prompt_code),
   KEY idx_blade_ai_prompt_tenant_status (tenant_id, status, is_deleted),
   KEY idx_blade_ai_prompt_tenant_name (tenant_id, prompt_name, is_deleted),
-  KEY idx_blade_ai_prompt_current_version (tenant_id, current_version_id)
+  KEY idx_blade_ai_prompt_current_version (tenant_id, current_version_id),
+  KEY idx_blade_ai_prompt_tenant_creator (tenant_id, create_user, is_deleted, update_time),
+  KEY idx_blade_ai_prompt_tenant_type (tenant_id, prompt_type, is_deleted, update_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='AI提示词';
 
 DROP TABLE IF EXISTS blade_ai_prompt_version;
@@ -751,10 +755,11 @@ CREATE TABLE blade_ai_prompt_version (
   version_no int NOT NULL COMMENT '版本号',
   prompt_code varchar(64) NOT NULL COMMENT '稳定编码快照',
   prompt_name varchar(100) NOT NULL COMMENT '名称快照',
+  prompt_type varchar(32) NOT NULL DEFAULT 'GENERAL' COMMENT '提示词类型快照',
   fixed_instruction text NULL COMMENT '固定指令快照',
   user_template text NULL COMMENT '用户模板快照',
   variable_schema text NOT NULL COMMENT '变量定义快照JSON',
-  source_type int NOT NULL DEFAULT 1 COMMENT '1普通发布 2回滚发布',
+  source_type int NOT NULL DEFAULT 1 COMMENT '1手工发布 2回滚发布 3自动发布',
   source_version_id bigint NULL DEFAULT NULL COMMENT '回滚来源版本ID',
   source_draft_revision bigint NULL DEFAULT NULL COMMENT '来源草稿修订号',
   content_hash char(64) NOT NULL COMMENT '快照SHA-256',
@@ -787,6 +792,29 @@ INSERT INTO blade_scope_api (id, menu_id, resource_code, scope_name, scope_path,
 (220260909000000008, NULL, 'ai:prompt:disable', '提示词停用', '/blade-ai/prompt/disable', 2, '停用当前发布提示词', 1, 0),
 (220260909000000009, NULL, 'ai:prompt:rollback', '提示词回滚', '/blade-ai/prompt/rollback', 2, '基于历史版本生成新版本', 1, 0),
 (220260909000000010, NULL, 'ai:prompt:runtime', '提示词运行时读取', '/feign/client/prompt/render', 2, '内部业务服务运行时渲染', 1, 0);
+
+INSERT INTO blade_scope_data
+  (id, menu_id, resource_code, scope_name, scope_field, scope_class, scope_column, scope_type,
+   scope_value, remark, status, is_deleted)
+VALUES
+(220260916500000001, NULL, 'ai:prompt:data:page:own', '提示词分页本人可见', '*',
+ 'org.springblade.ai.prompt.mapper.PromptMapper.selectScopePage', 'create_user', 2, NULL,
+ '提示词分页按创建人过滤', 1, 0),
+(220260916500000002, NULL, 'ai:prompt:data:page:all', '提示词分页全部可见', '*',
+ 'org.springblade.ai.prompt.mapper.PromptMapper.selectScopePage', '-', 1, NULL,
+ '提示词分页查看当前租户全部数据', 1, 0),
+(220260916500000003, NULL, 'ai:prompt:data:resource:own', '提示词资源本人可见', '*',
+ 'org.springblade.ai.prompt.mapper.PromptMapper.selectScopePrompt', 'create_user', 2, NULL,
+ '提示词详情、版本和写操作按创建人过滤', 1, 0),
+(220260916500000004, NULL, 'ai:prompt:data:resource:all', '提示词资源全部可见', '*',
+ 'org.springblade.ai.prompt.mapper.PromptMapper.selectScopePrompt', '-', 1, NULL,
+ '提示词详情、版本和写操作查看当前租户全部数据', 1, 0);
+
+INSERT INTO blade_role_scope (id, scope_category, scope_id, role_id) VALUES
+(220260916500000101, 1, 220260916500000002, 1123598816738675201),
+(220260916500000102, 1, 220260916500000004, 1123598816738675201),
+(220260916500000103, 1, 220260916500000001, 1123598816738675202),
+(220260916500000104, 1, 220260916500000003, 1123598816738675202);
 
 -- ----------------------------
 -- REQ-2026-002 tag category management

@@ -21,17 +21,20 @@ import org.springblade.ai.prompt.dto.PromptDisableDTO;
 import org.springblade.ai.prompt.dto.PromptPublishDTO;
 import org.springblade.ai.prompt.dto.PromptRollbackDTO;
 import org.springblade.ai.prompt.engine.PromptContentValidator;
-import org.springblade.ai.prompt.engine.PromptHash;
 import org.springblade.ai.prompt.engine.PromptSchemaCodec;
 import org.springblade.ai.prompt.engine.PromptValidationResult;
 import org.springblade.ai.prompt.entity.Prompt;
 import org.springblade.ai.prompt.entity.PromptVersion;
 import org.springblade.ai.prompt.enums.PromptStatus;
+import org.springblade.ai.prompt.enums.PromptType;
+import org.springblade.ai.prompt.enums.PublishMode;
 import org.springblade.ai.prompt.enums.VersionSourceType;
 import org.springblade.ai.prompt.mapper.PromptMapper;
 import org.springblade.ai.prompt.mapper.PromptVersionMapper;
 import org.springblade.ai.prompt.service.IPromptPublishService;
 import org.springblade.ai.prompt.service.IPromptService;
+import org.springblade.ai.prompt.service.PromptAccessService;
+import org.springblade.ai.prompt.service.PromptVersionFactory;
 import org.springblade.ai.prompt.vo.PromptMutationVO;
 import org.springblade.core.log.exception.ServiceException;
 import org.springblade.core.secure.utils.SecureUtil;
@@ -39,60 +42,69 @@ import org.springblade.core.tool.api.ResultCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.Objects;
 
-/** 提示词发布、停用和回滚事务实现。 @author BladeX */
+/**
+ * 提示词发布、停用和回滚事务实现。
+ *
+ * @author BladeX
+ */
 @Service
 @RequiredArgsConstructor
 public class PromptPublishServiceImpl implements IPromptPublishService {
+
 	private final IPromptService promptService;
 	private final PromptMapper promptMapper;
 	private final PromptVersionMapper versionMapper;
 	private final PromptSchemaCodec schemaCodec;
 	private final PromptContentValidator validator;
-	private final PromptHash promptHash;
+	private final PromptAccessService accessService;
+	private final PromptVersionFactory versionFactory;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public PromptMutationVO publish(PromptPublishDTO dto) {
 		String tenantId = promptService.currentTenantId();
-		Prompt prompt = lockedPrompt(tenantId, dto.getId(), dto.getLockVersion());
+		Prompt accessible = promptService.getTenantPrompt(dto.getId());
+		Prompt prompt = lockedPrompt(tenantId, accessible, dto.getLockVersion());
+		if (!Objects.equals(prompt.getPublishMode(), PublishMode.MANUAL.getValue())) {
+			throw new ServiceException(PromptResultCode.PROMPT_PUBLISH_MODE_CONFLICT);
+		}
 		PromptValidationResult validation = validator.validatePublish(prompt.getFixedInstruction(), prompt.getUserTemplate(),
 			schemaCodec.decode(prompt.getVariableSchema()));
 		if (!validation.isValid()) {
 			throw new ServiceException(PromptResultCode.PROMPT_TEMPLATE_INVALID.detail(firstIssue(validation)));
 		}
 		int versionNo = prompt.getCurrentVersionNo() + 1;
-		PromptVersion version = buildVersion(prompt, versionNo, VersionSourceType.PUBLISH, null,
-			prompt.getDraftRevision(), dto.getChangeNote());
+		PromptVersion version = versionFactory.fromPrompt(prompt, versionNo, VersionSourceType.PUBLISH, null,
+			prompt.getDraftRevision(), dto.getChangeNote(), currentUserId());
 		versionMapper.insert(version);
-		if (promptMapper.updatePublishedState(tenantId, prompt.getId(), dto.getLockVersion(), version.getId(),
-			versionNo, false, currentUserId()) != 1) {
+		if (promptMapper.updatePublishedState(tenantId, prompt.getId(), prompt.getCreateUser(), dto.getLockVersion(),
+			version.getId(), versionNo, false, currentUserId()) != 1) {
 			throw new ServiceException(PromptResultCode.PROMPT_CONFLICT);
 		}
-		return mutation(prompt, version, PromptStatus.PUBLISHED, false, validation);
+		return mutation(prompt, version, PromptStatus.PUBLISHED, validation);
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public PromptMutationVO disable(PromptDisableDTO dto) {
 		String tenantId = promptService.currentTenantId();
-		Prompt prompt = lockedPrompt(tenantId, dto.getId(), dto.getLockVersion());
+		Prompt accessible = promptService.getTenantPrompt(dto.getId());
+		Prompt prompt = lockedPrompt(tenantId, accessible, dto.getLockVersion());
 		if (prompt.getCurrentVersionId() == null) {
 			throw new ServiceException(PromptResultCode.PROMPT_NOT_PUBLISHED);
 		}
 		if (Objects.equals(prompt.getStatus(), PromptStatus.DISABLED.getValue())) {
 			throw new ServiceException(PromptResultCode.PROMPT_DISABLED);
 		}
-		if (promptMapper.updateDisabledState(tenantId, prompt.getId(), dto.getLockVersion(), currentUserId()) != 1) {
+		if (promptMapper.updateDisabledState(tenantId, prompt.getId(), prompt.getCreateUser(), dto.getLockVersion(),
+			currentUserId()) != 1) {
 			throw new ServiceException(PromptResultCode.PROMPT_CONFLICT);
 		}
-		PromptMutationVO vo = new PromptMutationVO();
-		vo.setId(prompt.getId());
+		PromptMutationVO vo = mutationBase(prompt, prompt.getPromptType());
 		vo.setStatus(PromptStatus.DISABLED.getValue());
 		vo.setLockVersion(dto.getLockVersion() + 1);
-		vo.setDraftRevision(prompt.getDraftRevision());
 		vo.setVersionId(prompt.getCurrentVersionId());
 		vo.setVersionNo(prompt.getCurrentVersionNo());
 		return vo;
@@ -102,7 +114,8 @@ public class PromptPublishServiceImpl implements IPromptPublishService {
 	@Transactional(rollbackFor = Exception.class)
 	public PromptMutationVO rollback(PromptRollbackDTO dto) {
 		String tenantId = promptService.currentTenantId();
-		Prompt prompt = lockedPrompt(tenantId, dto.getId(), dto.getLockVersion());
+		Prompt accessible = promptService.getTenantPrompt(dto.getId());
+		Prompt prompt = lockedPrompt(tenantId, accessible, dto.getLockVersion());
 		PromptVersion target = versionMapper.selectTenantVersion(tenantId, prompt.getId(), dto.getTargetVersionId());
 		if (target == null) {
 			throw new ServiceException(PromptResultCode.PROMPT_ROLLBACK_TARGET_INVALID);
@@ -113,82 +126,46 @@ public class PromptPublishServiceImpl implements IPromptPublishService {
 			throw new ServiceException(PromptResultCode.PROMPT_ROLLBACK_TARGET_INVALID.detail(firstIssue(validation)));
 		}
 		int versionNo = prompt.getCurrentVersionNo() + 1;
-		PromptVersion version = buildVersion(target, prompt.getId(), versionNo, dto.getChangeNote());
+		PromptVersion version = versionFactory.fromVersion(target, prompt.getId(), versionNo, dto.getChangeNote(),
+			currentUserId());
 		versionMapper.insert(version);
-		if (promptMapper.updatePublishedState(tenantId, prompt.getId(), dto.getLockVersion(), version.getId(),
-			versionNo, true, currentUserId()) != 1) {
+		if (promptMapper.updatePublishedState(tenantId, prompt.getId(), prompt.getCreateUser(), dto.getLockVersion(),
+			version.getId(), versionNo, true, currentUserId()) != 1) {
 			throw new ServiceException(PromptResultCode.PROMPT_CONFLICT);
 		}
-		return mutation(prompt, version, PromptStatus.PUBLISHED, true, validation);
+		return mutation(prompt, version, PromptStatus.PUBLISHED, validation);
 	}
 
-	private Prompt lockedPrompt(String tenantId, Long id, Long expectedLockVersion) {
-		Prompt prompt = promptMapper.selectForUpdate(tenantId, id);
-		if (prompt == null) {
-			throw new ServiceException(PromptResultCode.PROMPT_NOT_FOUND);
-		}
+	private Prompt lockedPrompt(String tenantId, Prompt accessible, Long expectedLockVersion) {
+		Prompt prompt = promptMapper.selectForUpdate(tenantId, accessible.getId());
+		accessService.verifyLocked(accessible, prompt);
 		if (!Objects.equals(prompt.getLockVersion(), expectedLockVersion)) {
 			throw new ServiceException(PromptResultCode.PROMPT_CONFLICT);
 		}
 		return prompt;
 	}
 
-	private PromptVersion buildVersion(Prompt prompt, int versionNo, VersionSourceType sourceType,
-		Long sourceVersionId, Long sourceDraftRevision, String note) {
-		PromptVersion version = new PromptVersion();
-		version.setPromptId(prompt.getId());
-		version.setVersionNo(versionNo);
-		version.setPromptCode(prompt.getPromptCode());
-		version.setPromptName(prompt.getPromptName());
-		version.setFixedInstruction(prompt.getFixedInstruction());
-		version.setUserTemplate(prompt.getUserTemplate());
-		version.setVariableSchema(prompt.getVariableSchema());
-		version.setSourceType(sourceType.getValue());
-		version.setSourceVersionId(sourceVersionId);
-		version.setSourceDraftRevision(sourceDraftRevision);
-		version.setContentHash(promptHash.calculate(prompt.getPromptCode(), prompt.getPromptName(),
-			prompt.getFixedInstruction(), prompt.getUserTemplate(), prompt.getVariableSchema()));
-		version.setChangeNote(note.trim());
-		version.setPublishUser(currentUserId());
-		version.setPublishTime(new Date());
-		version.setStatus(1);
-		version.setTenantId(prompt.getTenantId());
-		version.setIsDeleted(0);
-		return version;
-	}
-
-	private PromptVersion buildVersion(PromptVersion target, Long promptId, int versionNo, String note) {
-		PromptVersion version = new PromptVersion();
-		version.setPromptId(promptId);
-		version.setVersionNo(versionNo);
-		version.setPromptCode(target.getPromptCode());
-		version.setPromptName(target.getPromptName());
-		version.setFixedInstruction(target.getFixedInstruction());
-		version.setUserTemplate(target.getUserTemplate());
-		version.setVariableSchema(target.getVariableSchema());
-		version.setSourceType(VersionSourceType.ROLLBACK.getValue());
-		version.setSourceVersionId(target.getId());
-		version.setContentHash(promptHash.calculate(target.getPromptCode(), target.getPromptName(),
-			target.getFixedInstruction(), target.getUserTemplate(), target.getVariableSchema()));
-		version.setChangeNote(note.trim());
-		version.setPublishUser(currentUserId());
-		version.setPublishTime(new Date());
-		version.setStatus(1);
-		version.setTenantId(target.getTenantId());
-		version.setIsDeleted(0);
-		return version;
-	}
-
-	private PromptMutationVO mutation(Prompt prompt, PromptVersion version, PromptStatus status, boolean draftDirty,
+	private PromptMutationVO mutation(Prompt prompt, PromptVersion version, PromptStatus status,
 		PromptValidationResult validation) {
-		PromptMutationVO vo = new PromptMutationVO();
-		vo.setId(prompt.getId());
+		PromptMutationVO vo = mutationBase(prompt, version.getPromptType());
 		vo.setStatus(status.getValue());
 		vo.setLockVersion(prompt.getLockVersion() + 1);
-		vo.setDraftRevision(prompt.getDraftRevision());
 		vo.setVersionId(version.getId());
 		vo.setVersionNo(version.getVersionNo());
 		vo.setWarnings(validation.getWarnings());
+		return vo;
+	}
+
+	private PromptMutationVO mutationBase(Prompt prompt, String promptType) {
+		PromptMutationVO vo = new PromptMutationVO();
+		vo.setId(prompt.getId());
+		PromptType type = PromptType.of(promptType);
+		vo.setPromptType(promptType);
+		vo.setPromptTypeName(type == null ? null : type.getLabel());
+		PublishMode mode = PublishMode.of(prompt.getPublishMode());
+		vo.setPublishMode(prompt.getPublishMode());
+		vo.setPublishModeName(mode == null ? null : mode.getLabel());
+		vo.setDraftRevision(prompt.getDraftRevision());
 		return vo;
 	}
 
@@ -205,4 +182,5 @@ public class PromptPublishServiceImpl implements IPromptPublishService {
 		String target = issue.getVariableName() == null ? issue.getField() : issue.getVariableName();
 		return target + " " + issue.getMessage();
 	}
+
 }

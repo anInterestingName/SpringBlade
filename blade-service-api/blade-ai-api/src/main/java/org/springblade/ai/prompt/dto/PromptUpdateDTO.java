@@ -38,7 +38,10 @@ public class PromptUpdateDTO implements Serializable {
 	@NotNull @JsonSerialize(using = ToStringSerializer.class) private Long lockVersion;
 	@NotBlank @Size(max = 100) private String promptName;
 	@NotBlank @Size(max = 64) private String promptCode;
+	@NotBlank @Size(max = 32) private String promptType;
+	@NotNull private Integer publishMode;
 	private String fixedInstruction;
 	private String userTemplate;
 	@Valid @NotNull private List<PromptVariableDTO> variables = new ArrayList<>();
+	@Size(max = 500) private String changeNote;
 }

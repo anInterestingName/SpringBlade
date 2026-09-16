@@ -35,10 +35,13 @@ public class PromptVersionVO implements Serializable {
 	private Integer versionNo;
 	private String promptCode;
 	private String promptName;
+	private String promptType;
+	private String promptTypeName;
 	private String fixedInstruction;
 	private String userTemplate;
 	private List<PromptVariableDTO> variables = new ArrayList<>();
 	private Integer sourceType;
+	private String sourceTypeName;
 	@JsonSerialize(using = ToStringSerializer.class) private Long sourceVersionId;
 	@JsonSerialize(using = ToStringSerializer.class) private Long sourceDraftRevision;
 	private String contentHash;

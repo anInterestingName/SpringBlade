@@ -30,7 +30,8 @@ import org.springblade.core.mp.support.Query;
 
 /** 提示词管理服务。 @author BladeX */
 public interface IPromptService extends BaseService<Prompt> {
-	IPage<PromptListVO> selectPage(String name, String code, Integer status, Query query);
+	IPage<PromptListVO> selectPage(String name, String code, Integer status, String promptType,
+		Integer publishMode, Query query);
 	PromptDetailVO detail(Long id);
 	PromptMutationVO create(PromptCreateDTO dto);
 	PromptMutationVO update(PromptUpdateDTO dto);

@@ -16,7 +16,9 @@
 package org.springblade.ai.prompt.dto;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.io.Serial;
@@ -30,6 +32,7 @@ import java.util.Map;
 @Data
 public class PromptPreviewDTO implements Serializable {
 	@Serial private static final long serialVersionUID = 1L;
+	@NotBlank @Size(max = 32) private String promptType;
 	private String fixedInstruction;
 	private String userTemplate;
 	@Valid @NotNull private List<PromptVariableDTO> variables = new ArrayList<>();

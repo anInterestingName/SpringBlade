@@ -18,29 +18,35 @@ package org.springblade.ai.prompt.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Locale;
+
 /**
- * 发布版本来源。
+ * 提示词业务类型。
  *
  * @author BladeX
  */
 @Getter
 @AllArgsConstructor
-public enum VersionSourceType {
-	PUBLISH(1, "手工发布"),
-	ROLLBACK(2, "回滚发布"),
-	AUTO_PUBLISH(3, "自动发布");
+public enum PromptType {
 
-	private final int value;
+	GENERAL("GENERAL", "通用"),
+	SYSTEM("SYSTEM", "系统"),
+	TEXT("TEXT", "文本"),
+	IMAGE("IMAGE", "图像");
+
+	private final String code;
 	private final String label;
 
-	public static VersionSourceType of(Integer value) {
-		if (value != null) {
-			for (VersionSourceType sourceType : values()) {
-				if (sourceType.value == value) {
-					return sourceType;
+	public static PromptType of(String code) {
+		if (code != null) {
+			String normalized = code.trim().toUpperCase(Locale.ROOT);
+			for (PromptType type : values()) {
+				if (type.code.equals(normalized)) {
+					return type;
 				}
 			}
 		}
-		return PUBLISH;
+		return null;
 	}
+
 }
