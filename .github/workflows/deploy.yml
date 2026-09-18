@@ -1,4 +1,4 @@
-name: Build and deploy SpringBlade
+name: Build and publish SpringBlade images
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: springblade-production
+  group: springblade-image-build
   cancel-in-progress: false
 
 env:
@@ -20,8 +20,6 @@ env:
 jobs:
   build_images:
     runs-on: ubuntu-latest
-    outputs:
-      image_tag: ${{ steps.image_meta.outputs.image_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -80,44 +78,3 @@ jobs:
               --push \
               "$context"
           done
-
-  deploy_app:
-    needs: build_images
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Configure SSH
-        shell: bash
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
-
-      - name: Upload application deployment files
-        shell: bash
-        env:
-          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
-          DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
-        run: |
-          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p /opt/springblade/app"
-          scp -P "$DEPLOY_PORT" script/docker/app/compose.yml script/docker/app/deploy.sh \
-            "$DEPLOY_USER@$DEPLOY_HOST:/opt/springblade/app/"
-
-      - name: Deploy immutable image tag
-        shell: bash
-        env:
-          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
-          DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
-          IMAGE_TAG: ${{ needs.build_images.outputs.image_tag }}
-        run: |
-          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
-            "cd /opt/springblade/app && sh deploy.sh '$IMAGE_TAG'"

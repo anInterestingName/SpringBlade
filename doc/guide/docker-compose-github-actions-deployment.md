@@ -474,14 +474,14 @@ echo '<GHCR_READ_TOKEN>' | docker login ghcr.io \
 
 凭据只授予镜像读取权限，不写入Compose或`.env`。
 
-### 9.3 发布
+### 9.3 手动发布
 
 ```bash
 cd /opt/springblade/app
 sh deploy.sh <12位Git SHA>
 ```
 
-应用部署脚本只操作`springblade-app`，不得停止或重建任何中间件project。
+应用部署脚本只操作`springblade-app`，不得停止或重建任何中间件project。该脚本由运维人员按需在服务器手动执行，不由 GitHub Actions 远程调用。
 
 ## 10. Nginx入口
 
@@ -503,26 +503,39 @@ docker compose -p springblade-ingress --env-file .env -f compose.yml up -d
 
 生产环境配置TLS证书后只对公网开放80/443。
 
-## 11. GitHub Actions
+## 11. GitHub Actions 镜像发布
 
-GitHub Actions使用JDK 21执行：
+GitHub Actions 只负责构建和推送镜像，不负责 SSH 登录、上传服务器文件或自动切换应用。工作流使用 JDK 21 执行：
 
 ```bash
 mvn clean package -DskipTests -Ddocker.skip=true
 ```
 
-工作流构建并推送10个同一Git SHA标签的镜像，通过production Environment审批后上传应用Compose和部署脚本，并在服务器执行应用发布。
+工作流支持两种触发方式：
 
-Production Environment配置：
+- 手工触发 `workflow_dispatch`。
+- 推送名称匹配 `v*` 的 Git tag。
 
-| 类型 | 名称 | 内容 |
-| --- | --- | --- |
-| Variable | `DEPLOY_HOST` | 应用服务器地址 |
-| Variable | `DEPLOY_USER` | 最小权限部署账号 |
-| Variable | `DEPLOY_PORT` | SSH端口 |
-| Secret | `DEPLOY_SSH_KEY` | 专用部署私钥 |
-| Secret | `DEPLOY_KNOWN_HOSTS` | 已核验的主机指纹 |
+成功后，GHCR 中会生成 10 个使用同一提交 SHA 前 12 位作为标签的服务镜像。Actions 不需要以下配置：
 
+- `production` Environment
+- `DEPLOY_HOST`
+- `DEPLOY_USER`
+- `DEPLOY_PORT`
+- `DEPLOY_SSH_KEY`
+- `DEPLOY_KNOWN_HOSTS`
+
+Actions 仅需要仓库 `GITHUB_TOKEN` 的 `packages: write` 权限。服务器端按需部署时，先登录 GHCR，再手动执行：
+
+```bash
+echo '<GHCR_READ_TOKEN>' | docker login ghcr.io \
+  -u '<github-user>' --password-stdin
+
+cd /opt/springblade/app
+sh deploy.sh <12位Git SHA>
+```
+
+私有 GHCR 包使用只读 `read:packages` 凭据；凭据只保存在服务器或运维终端，不写入仓库、Compose 文件或 `.env`。
 ## 12. 启动顺序
 
 首次部署严格按以下顺序执行：
@@ -662,5 +675,5 @@ sh deploy.sh <上一稳定SHA>
 - [ ] `blade`全量SQL只在确认空库时执行。
 - [ ] Nacos `prod` namespace和公共配置已创建。
 - [ ] 10个应用镜像使用同一Git SHA标签。
-- [ ] 应用发布不改变中间件容器和本地数据目录。
-- [ ] MySQL备份和应用回滚均已演练。
+- [ ] 手动应用发布不改变中间件容器和本地数据目录。
+- [ ] MySQL备份和手动应用回滚均已演练。
