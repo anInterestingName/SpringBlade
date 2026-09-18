@@ -58,6 +58,21 @@ blade:
     public-key: ${BLADE_OAUTH2_PUBLIC_KEY}
     #使用 @org.springblade.test.Sm2KeyGenerator 获取,用于国密sm2解密,前端无需配置
     private-key: ${BLADE_OAUTH2_PRIVATE_KEY}
+  registration:
+    enabled: false
+    default-tenant-id: "000000"
+    captcha-enabled: true
+    account-min-length: 4
+    account-max-length: 32
+    password-min-length: 8
+    password-max-length: 64
+    rate-limit:
+      ip-window-seconds: 60
+      ip-max-attempts: 10
+      tenant-window-seconds: 60
+      tenant-max-attempts: 30
+      account-window-seconds: 600
+      account-max-attempts: 3
   token:
     #使用 @org.springblade.test.SignKeyGenerator 获取
     sign-key: ${BLADE_TOKEN_SIGN_KEY}
@@ -101,4 +116,6 @@ blade:
       - blade_notice
       - blade_ai_prompt
       - blade_ai_prompt_version
+      - blade_tag_category
+      - blade_tag
 

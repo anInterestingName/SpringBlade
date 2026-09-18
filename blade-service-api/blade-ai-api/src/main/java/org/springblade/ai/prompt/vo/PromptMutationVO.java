@@ -29,6 +29,10 @@ import java.util.List;
 public class PromptMutationVO implements Serializable {
 	@Serial private static final long serialVersionUID = 1L;
 	@JsonSerialize(using = ToStringSerializer.class) private Long id;
+	private String promptType;
+	private String promptTypeName;
+	private Integer publishMode;
+	private String publishModeName;
 	private Integer status;
 	@JsonSerialize(using = ToStringSerializer.class) private Long lockVersion;
 	@JsonSerialize(using = ToStringSerializer.class) private Long draftRevision;

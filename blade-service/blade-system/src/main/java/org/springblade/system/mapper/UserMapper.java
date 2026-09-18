@@ -51,6 +51,15 @@ public interface UserMapper extends BaseMapper<User> {
 	User getUser(String tenantId, String account, String password);
 
 	/**
+	 * 检查租户内账号是否已占用，包含逻辑删除记录。
+	 *
+	 * @param tenantId 租户编号
+	 * @param account 账号
+	 * @return 占用记录数量
+	 */
+	long countByTenantAndAccount(@Param("tenantId") String tenantId, @Param("account") String account);
+
+	/**
 	 * 获取角色名
 	 *
 	 * @param ids 角色ID数组

@@ -16,23 +16,40 @@
 package org.springblade.ai.prompt.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.Param;
 import org.springblade.ai.prompt.entity.Prompt;
+import org.springblade.core.datascope.annotation.DataAuth;
+import org.springblade.core.datascope.enums.DataScopeEnum;
 
 /** 提示词主记录 Mapper。 @author BladeX */
 public interface PromptMapper extends BaseMapper<Prompt> {
+	@DataAuth(type = DataScopeEnum.CUSTOM, value = "where 1 = 0")
+	IPage<Prompt> selectScopePage(IPage<Prompt> page, @Param("tenantId") String tenantId,
+		@Param("name") String name, @Param("code") String code, @Param("status") Integer status,
+		@Param("promptType") String promptType, @Param("publishMode") Integer publishMode,
+		@Param("ownerUserId") Long ownerUserId);
+	@DataAuth(type = DataScopeEnum.CUSTOM, value = "where 1 = 0")
+	Prompt selectScopePrompt(@Param("tenantId") String tenantId, @Param("id") Long id,
+		@Param("ownerUserId") Long ownerUserId);
 	Prompt selectTenantPrompt(@Param("tenantId") String tenantId, @Param("id") Long id);
 	Prompt selectTenantPromptByCode(@Param("tenantId") String tenantId, @Param("code") String code);
 	Prompt selectTenantPromptByCodeIncludingDeleted(@Param("tenantId") String tenantId, @Param("code") String code);
 	Prompt selectForUpdate(@Param("tenantId") String tenantId, @Param("id") Long id);
 	int updateDraft(@Param("prompt") Prompt prompt, @Param("tenantId") String tenantId,
-		@Param("expectedLockVersion") Long expectedLockVersion);
+		@Param("ownerUserId") Long ownerUserId, @Param("expectedLockVersion") Long expectedLockVersion);
+	int updateAutoPublishedDraft(@Param("prompt") Prompt prompt, @Param("tenantId") String tenantId,
+		@Param("ownerUserId") Long ownerUserId, @Param("expectedLockVersion") Long expectedLockVersion,
+		@Param("versionId") Long versionId, @Param("versionNo") Integer versionNo);
 	int updatePublishedState(@Param("tenantId") String tenantId, @Param("id") Long id,
-		@Param("expectedLockVersion") Long expectedLockVersion, @Param("versionId") Long versionId,
+		@Param("ownerUserId") Long ownerUserId, @Param("expectedLockVersion") Long expectedLockVersion,
+		@Param("versionId") Long versionId,
 		@Param("versionNo") Integer versionNo, @Param("draftDirty") boolean draftDirty,
 		@Param("updateUser") Long updateUser);
 	int updateDisabledState(@Param("tenantId") String tenantId, @Param("id") Long id,
-		@Param("expectedLockVersion") Long expectedLockVersion, @Param("updateUser") Long updateUser);
+		@Param("ownerUserId") Long ownerUserId, @Param("expectedLockVersion") Long expectedLockVersion,
+		@Param("updateUser") Long updateUser);
 	int logicalDelete(@Param("tenantId") String tenantId, @Param("id") Long id,
-		@Param("expectedLockVersion") Long expectedLockVersion, @Param("updateUser") Long updateUser);
+		@Param("ownerUserId") Long ownerUserId, @Param("expectedLockVersion") Long expectedLockVersion,
+		@Param("updateUser") Long updateUser);
 }

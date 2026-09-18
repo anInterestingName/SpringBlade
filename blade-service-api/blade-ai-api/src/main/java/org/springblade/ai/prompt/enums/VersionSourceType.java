@@ -26,8 +26,21 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum VersionSourceType {
-	PUBLISH(1),
-	ROLLBACK(2);
+	PUBLISH(1, "手工发布"),
+	ROLLBACK(2, "回滚发布"),
+	AUTO_PUBLISH(3, "自动发布");
 
 	private final int value;
+	private final String label;
+
+	public static VersionSourceType of(Integer value) {
+		if (value != null) {
+			for (VersionSourceType sourceType : values()) {
+				if (sourceType.value == value) {
+					return sourceType;
+				}
+			}
+		}
+		return PUBLISH;
+	}
 }

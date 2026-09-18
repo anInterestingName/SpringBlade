@@ -2,6 +2,38 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.springblade.ai.prompt.mapper.PromptMapper">
 
+    <select id="selectScopePage" resultType="org.springblade.ai.prompt.entity.Prompt">
+        SELECT * FROM blade_ai_prompt
+        WHERE tenant_id = #{tenantId} AND is_deleted = 0
+        <if test="name != null and name != ''">
+            AND prompt_name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="code != null and code != ''">
+            AND prompt_code LIKE CONCAT('%', #{code}, '%')
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="promptType != null and promptType != ''">
+            AND prompt_type = #{promptType}
+        </if>
+        <if test="publishMode != null">
+            AND publish_mode = #{publishMode}
+        </if>
+        <if test="ownerUserId != null">
+            AND create_user = #{ownerUserId}
+        </if>
+        ORDER BY update_time DESC, id DESC
+    </select>
+
+    <select id="selectScopePrompt" resultType="org.springblade.ai.prompt.entity.Prompt">
+        SELECT * FROM blade_ai_prompt
+        WHERE tenant_id = #{tenantId} AND id = #{id} AND is_deleted = 0
+        <if test="ownerUserId != null">
+            AND create_user = #{ownerUserId}
+        </if>
+    </select>
+
     <select id="selectTenantPrompt" resultType="org.springblade.ai.prompt.entity.Prompt">
         SELECT * FROM blade_ai_prompt
         WHERE tenant_id = #{tenantId} AND id = #{id} AND is_deleted = 0
@@ -27,6 +59,8 @@
     <update id="updateDraft">
         UPDATE blade_ai_prompt
         SET prompt_name = #{prompt.promptName},
+            prompt_type = #{prompt.promptType},
+            publish_mode = #{prompt.publishMode},
             fixed_instruction = #{prompt.fixedInstruction},
             user_template = #{prompt.userTemplate},
             variable_schema = #{prompt.variableSchema},
@@ -36,6 +70,28 @@
             update_user = #{prompt.updateUser},
             update_time = NOW()
         WHERE tenant_id = #{tenantId} AND id = #{prompt.id}
+          AND create_user = #{ownerUserId}
+          AND lock_version = #{expectedLockVersion} AND is_deleted = 0
+    </update>
+
+    <update id="updateAutoPublishedDraft">
+        UPDATE blade_ai_prompt
+        SET prompt_name = #{prompt.promptName},
+            prompt_type = #{prompt.promptType},
+            publish_mode = #{prompt.publishMode},
+            fixed_instruction = #{prompt.fixedInstruction},
+            user_template = #{prompt.userTemplate},
+            variable_schema = #{prompt.variableSchema},
+            draft_revision = draft_revision + 1,
+            draft_dirty = 0,
+            current_version_id = #{versionId},
+            current_version_no = #{versionNo},
+            status = 1,
+            lock_version = lock_version + 1,
+            update_user = #{prompt.updateUser},
+            update_time = NOW()
+        WHERE tenant_id = #{tenantId} AND id = #{prompt.id}
+          AND create_user = #{ownerUserId}
           AND lock_version = #{expectedLockVersion} AND is_deleted = 0
     </update>
 
@@ -45,6 +101,7 @@
             status = 1, draft_dirty = #{draftDirty}, lock_version = lock_version + 1,
             update_user = #{updateUser}, update_time = NOW()
         WHERE tenant_id = #{tenantId} AND id = #{id}
+          AND create_user = #{ownerUserId}
           AND lock_version = #{expectedLockVersion} AND is_deleted = 0
     </update>
 
@@ -53,6 +110,7 @@
         SET status = 2, lock_version = lock_version + 1,
             update_user = #{updateUser}, update_time = NOW()
         WHERE tenant_id = #{tenantId} AND id = #{id}
+          AND create_user = #{ownerUserId}
           AND lock_version = #{expectedLockVersion} AND is_deleted = 0
     </update>
 
@@ -61,6 +119,7 @@
         SET is_deleted = 1, lock_version = lock_version + 1,
             update_user = #{updateUser}, update_time = NOW()
         WHERE tenant_id = #{tenantId} AND id = #{id}
+          AND create_user = #{ownerUserId}
           AND lock_version = #{expectedLockVersion} AND is_deleted = 0
     </update>
 </mapper>

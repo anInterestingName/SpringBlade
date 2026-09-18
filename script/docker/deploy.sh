@@ -1,96 +1,57 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
-#使用说明，用来提示输入参数
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+STACK=${1:-}
+ACTION=${2:-up}
+
 usage() {
-	echo "Usage: sh 执行脚本.sh [port|mount|base|modules|stop|rm|rmiNoneTag]"
+	echo "Usage: sh deploy.sh <infra|app|ingress|network> <up|down|pull|config|deploy> [image-tag]"
 	exit 1
 }
 
-#开启所需端口
-port(){
-	firewall-cmd --add-port=88/tcp --permanent
-	firewall-cmd --add-port=8000/tcp --permanent
-	firewall-cmd --add-port=8848/tcp --permanent
-	firewall-cmd --add-port=9848/tcp --permanent
-	firewall-cmd --add-port=9849/tcp --permanent
-	firewall-cmd --add-port=8858/tcp --permanent
-	firewall-cmd --add-port=3306/tcp --permanent
-	firewall-cmd --add-port=3379/tcp --permanent
-	firewall-cmd --add-port=7002/tcp --permanent
-	firewall-cmd --add-port=9411/tcp --permanent
-	firewall-cmd --add-port=18000/tcp --permanent
-	service firewalld restart
+ensure_network() {
+	docker network inspect springblade-platform >/dev/null 2>&1 || docker network create springblade-platform
 }
 
-##放置挂载文件
-mount(){
-	if test ! -f "/docker/nginx/api/nginx.conf" ;then
-		mkdir -p /docker/nginx/api
-		cp nginx/api/nginx.conf /docker/nginx/api/nginx.conf
-	fi
-	if test ! -f "/docker/nginx/web/nginx.conf" ;then
-		mkdir -p /docker/nginx/web
-		cp nginx/web/nginx.conf /docker/nginx/web/nginx.conf
-		cp -r nginx/web/html /docker/nginx/web/html
-	fi
-	if test ! -f "/docker/nacos/conf/application.properties" ;then
-		mkdir -p /docker/nacos/conf
-		cp nacos/conf/application.properties /docker/nacos/conf/application.properties
-	fi
-	if test ! -d "/docker/nacos/data" ;then
-		mkdir -p /docker/nacos/data
-	fi
-}
-
-#启动基础模块
-base(){
-	docker-compose up -d nacos sentinel web-nginx blade-nginx blade-redis
-}
-
-#启动程序模块
-modules(){
-	docker-compose up -d blade-gateway1 blade-gateway2 blade-admin blade-auth1 blade-auth2 blade-desk blade-system blade-ai blade-log blade-report blade-develop
-}
-
-#关闭所有模块
-stop(){
-	docker-compose stop
-}
-
-#删除所有模块
-rm(){
-	docker-compose rm
-}
-
-#删除Tag为空的镜像
-rmiNoneTag(){
-	docker images|grep none|awk '{print $3}'|xargs docker rmi -f
-}
-
-#根据输入参数，选择执行对应方法，不输入则执行使用说明
-case "$1" in
-"port")
-	port
-;;
-"mount")
-	mount
-;;
-"base")
-	base
-;;
-"modules")
-	modules
-;;
-"stop")
-	stop
-;;
-"rm")
-	rm
-;;
-"rmiNoneTag")
-	rmiNoneTag
-;;
-*)
-	usage
-;;
+case "$STACK" in
+	network)
+		ensure_network
+		;;
+	infra)
+		ensure_network
+		case "$ACTION" in
+			up) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/compose.yml" up -d ;;
+			down) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/compose.yml" down ;;
+			pull) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/compose.yml" pull ;;
+			config) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/compose.yml" config --quiet ;;
+			*) usage ;;
+		esac
+		;;
+	app)
+		ensure_network
+		if [ "$ACTION" = "deploy" ]; then
+			(cd "$SCRIPT_DIR/app" && sh deploy.sh "${3:-}")
+		else
+			case "$ACTION" in
+				up) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/compose.yml" up -d ;;
+				down) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/compose.yml" down ;;
+				pull) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/compose.yml" pull ;;
+				config) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/compose.yml" config --quiet ;;
+				*) usage ;;
+			esac
+		fi
+		;;
+	ingress)
+		ensure_network
+		case "$ACTION" in
+			up) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/compose.yml" up -d ;;
+			down) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/compose.yml" down ;;
+			pull) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/compose.yml" pull ;;
+			config) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/compose.yml" config --quiet ;;
+			*) usage ;;
+		esac
+		;;
+	*) usage ;;
 esac

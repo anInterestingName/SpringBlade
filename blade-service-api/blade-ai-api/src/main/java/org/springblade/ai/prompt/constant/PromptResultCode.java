@@ -40,7 +40,14 @@ public enum PromptResultCode implements IResultCode {
 	PROMPT_DISABLED(48008, "提示词已停用"),
 	PROMPT_DELETE_FORBIDDEN(48009, "存在发布历史的提示词不允许删除"),
 	PROMPT_ROLLBACK_TARGET_INVALID(48010, "回滚目标版本不合法"),
-	PROMPT_SERVICE_UNAVAILABLE(48011, "提示词服务暂不可用");
+	PROMPT_SERVICE_UNAVAILABLE(48011, "提示词服务暂不可用"),
+	PROMPT_TYPE_INVALID(48012, "提示词类型无效"),
+	PROMPT_PUBLISH_MODE_INVALID(48013, "提示词发布方式无效"),
+	PROMPT_PUBLISH_MODE_CONFLICT(48014, "当前发布方式不允许执行该操作"),
+	PROMPT_AUTO_PUBLISH_NOTE_REQUIRED(48015, "自动发布必须填写变更说明"),
+	PROMPT_DATA_SCOPE_UNAVAILABLE(48016, "提示词数据权限未配置或暂不可用"),
+	PROMPT_SYSTEM_POLICY_FORBIDDEN(48017, "无权维护系统提示词策略"),
+	PROMPT_SYSTEM_POLICY_INVALID(48018, "系统提示词策略配置不合法");
 
 	private final int code;
 	private final String message;

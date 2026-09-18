@@ -30,8 +30,11 @@ public class PromptRenderVO implements Serializable {
 	@Serial private static final long serialVersionUID = 1L;
 	private Boolean valid;
 	private String promptCode;
+	private String promptType;
+	private String promptTypeName;
 	@JsonSerialize(using = ToStringSerializer.class) private Long versionId;
 	private Integer versionNo;
+	private String contentHash;
 	private String fixedInstruction;
 	private String userMessage;
 	private List<PromptMessageVO> messages = new ArrayList<>();

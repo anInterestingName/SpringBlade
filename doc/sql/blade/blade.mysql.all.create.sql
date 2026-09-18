@@ -284,6 +284,73 @@ INSERT INTO `blade_menu` (`id`, `parent_id`, `code`, `name`, `alias`, `path`, `s
 COMMIT;
 
 -- ----------------------------
+-- Records of tag management menu
+-- ----------------------------
+BEGIN;
+INSERT INTO `blade_menu`
+  (`id`, `parent_id`, `code`, `name`, `alias`, `path`, `source`, `sort`, `category`, `action`, `is_open`, `remark`, `is_deleted`)
+VALUES
+  (220260910100000001, 1123598815738675203, 'tag_manage', '标签管理', 'menu',
+   '/system/tag', 'iconfont iconicon_addresslist', 9, 1, 0, 1, '标签分类与层级标签管理', 0),
+  (220260910100000002, 220260910100000001, 'tag_category_view', '分类查看', 'view',
+   '/system/tag/category/view', 'file-text', 1, 2, 2, 1, '标签管理按钮权限', 0),
+  (220260910100000003, 220260910100000001, 'tag_category_add', '分类新增', 'add',
+   '/system/tag/category/add', 'plus', 2, 2, 1, 1, '标签管理按钮权限', 0),
+  (220260910100000004, 220260910100000001, 'tag_category_edit', '分类编辑', 'edit',
+   '/system/tag/category/edit', 'form', 3, 2, 2, 1, '标签管理按钮权限', 0),
+  (220260910100000005, 220260910100000001, 'tag_category_status', '分类状态', 'status',
+   '/system/tag/category/status', 'switch-button', 4, 2, 2, 1, '标签管理按钮权限', 0),
+  (220260910100000006, 220260910100000001, 'tag_category_delete', '分类删除', 'delete',
+   '/system/tag/category/delete', 'delete', 5, 2, 2, 1, '标签管理按钮权限', 0),
+  (220260910100000007, 220260910100000001, 'tag_view', '标签查看', 'view',
+   '/system/tag/view', 'file-text', 6, 2, 2, 1, '标签管理按钮权限', 0),
+  (220260910100000008, 220260910100000001, 'tag_add', '标签新增', 'add',
+   '/system/tag/add', 'plus', 7, 2, 1, 1, '标签管理按钮权限', 0),
+  (220260910100000009, 220260910100000001, 'tag_edit', '标签编辑', 'edit',
+   '/system/tag/edit', 'form', 8, 2, 2, 1, '标签管理按钮权限', 0),
+  (220260910100000010, 220260910100000001, 'tag_status', '标签状态', 'status',
+   '/system/tag/status', 'switch-button', 9, 2, 2, 1, '标签管理按钮权限', 0),
+  (220260910100000011, 220260910100000001, 'tag_delete', '标签删除', 'delete',
+   '/system/tag/delete', 'delete', 10, 2, 2, 1, '标签管理按钮权限', 0);
+COMMIT;
+
+-- ----------------------------
+-- Records of prompt management menu
+-- ----------------------------
+BEGIN;
+INSERT INTO `blade_menu`
+  (`id`, `parent_id`, `code`, `name`, `alias`, `path`, `source`, `sort`, `category`, `action`, `is_open`, `remark`, `is_deleted`)
+VALUES
+  (220260909100000001, 0, 'asset', '资产管理', 'menu', '/asset',
+   'iconfont iconicon_savememo', 6, 1, 0, 1, '可复用业务资产管理', 0),
+  (220260909100000002, 220260909100000001, 'prompt', '提示词管理', 'menu', '/asset/prompt',
+   'iconfont iconicon_doc', 1, 1, 0, 1, '提示词草稿、发布版本与图片反推', 0),
+  (220260909100000003, 220260909100000002, 'prompt_view', '查看', 'view',
+   '/asset/prompt/view', 'file-text', 1, 2, 2, 1, '提示词管理按钮权限', 0),
+  (220260909100000004, 220260909100000002, 'prompt_add', '新增', 'add',
+   '/asset/prompt/add', 'plus', 2, 2, 1, 1, '提示词管理按钮权限', 0),
+  (220260909100000005, 220260909100000002, 'prompt_edit', '编辑', 'edit',
+   '/asset/prompt/edit', 'form', 3, 2, 2, 1, '提示词管理按钮权限', 0),
+  (220260909100000006, 220260909100000002, 'prompt_copy', '复制', 'copy',
+   '/asset/prompt/copy', 'copy', 4, 2, 3, 1, '提示词管理按钮权限', 0),
+  (220260909100000007, 220260909100000002, 'prompt_delete', '删除', 'delete',
+   '/asset/prompt/delete', 'delete', 5, 2, 2, 1, '提示词管理按钮权限', 0),
+  (220260909100000008, 220260909100000002, 'prompt_preview', '预览', 'preview',
+   '/asset/prompt/preview', 'eye', 6, 2, 3, 1, '提示词管理按钮权限', 0),
+  (220260909100000009, 220260909100000002, 'prompt_publish', '发布', 'publish',
+   '/asset/prompt/publish', 'upload', 7, 2, 3, 1, '提示词管理按钮权限', 0),
+  (220260909100000010, 220260909100000002, 'prompt_disable', '停用', 'disable',
+   '/asset/prompt/disable', 'circle-close', 8, 2, 3, 1, '提示词管理按钮权限', 0),
+  (220260909100000011, 220260909100000002, 'prompt_rollback', '回滚', 'rollback',
+   '/asset/prompt/rollback', 'refresh-left', 9, 2, 3, 1, '提示词管理按钮权限', 0),
+  (220260917100000001, 220260909100000002, 'prompt_reverse', '图片反推', 'prompt_reverse',
+   '/asset/prompt/reverse', 'picture', 10, 2, 1, 1, '图片提示词反推入口', 0),
+  (220260917100000002, 220260909100000002, 'prompt_system_manage', '系统策略', 'prompt_system_manage',
+   '/asset/prompt/system-manage', 'setting', 11, 2, 3, 1, '系统提示词策略管理权限', 0);
+
+COMMIT;
+
+-- ----------------------------
 -- Table structure for blade_notice
 -- ----------------------------
 DROP TABLE IF EXISTS `blade_notice`;
@@ -463,6 +530,20 @@ CREATE TABLE `blade_role_menu`  (
 -- ----------------------------
 BEGIN;
 INSERT INTO `blade_role_menu` (`id`, `menu_id`, `role_id`) VALUES (1123598817738675201, 1123598815738675201, 1123598816738675201), (1123598817738675202, 1123598815738675202, 1123598816738675201), (1123598817738675203, 1123598815738675203, 1123598816738675201), (1123598817738675204, 1123598815738675204, 1123598816738675201), (1123598817738675205, 1123598815738675205, 1123598816738675201), (1123598817738675206, 1123598815738675206, 1123598816738675201), (1123598817738675207, 1123598815738675207, 1123598816738675201), (1123598817738675208, 1123598815738675208, 1123598816738675201), (1123598817738675209, 1123598815738675209, 1123598816738675201), (1123598817738675210, 1123598815738675210, 1123598816738675201), (1123598817738675211, 1123598815738675211, 1123598816738675201), (1123598817738675212, 1123598815738675212, 1123598816738675201), (1123598817738675213, 1123598815738675213, 1123598816738675201), (1123598817738675214, 1123598815738675214, 1123598816738675201), (1123598817738675215, 1123598815738675215, 1123598816738675201), (1123598817738675216, 1123598815738675216, 1123598816738675201), (1123598817738675217, 1123598815738675217, 1123598816738675201), (1123598817738675218, 1123598815738675218, 1123598816738675201), (1123598817738675219, 1123598815738675219, 1123598816738675201), (1123598817738675220, 1123598815738675220, 1123598816738675201), (1123598817738675221, 1123598815738675221, 1123598816738675201), (1123598817738675222, 1123598815738675222, 1123598816738675201), (1123598817738675223, 1123598815738675223, 1123598816738675201), (1123598817738675224, 1123598815738675224, 1123598816738675201), (1123598817738675225, 1123598815738675225, 1123598816738675201), (1123598817738675226, 1123598815738675226, 1123598816738675201), (1123598817738675227, 1123598815738675227, 1123598816738675201), (1123598817738675228, 1123598815738675228, 1123598816738675201), (1123598817738675229, 1123598815738675229, 1123598816738675201), (1123598817738675230, 1123598815738675230, 1123598816738675201), (1123598817738675231, 1123598815738675231, 1123598816738675201), (1123598817738675232, 1123598815738675232, 1123598816738675201), (1123598817738675233, 1123598815738675233, 1123598816738675201), (1123598817738675234, 1123598815738675234, 1123598816738675201), (1123598817738675235, 1123598815738675235, 1123598816738675201), (1123598817738675236, 1123598815738675236, 1123598816738675201), (1123598817738675237, 1123598815738675237, 1123598816738675201), (1123598817738675238, 1123598815738675238, 1123598816738675201), (1123598817738675239, 1123598815738675239, 1123598816738675201), (1123598817738675240, 1123598815738675240, 1123598816738675201), (1123598817738675241, 1123598815738675241, 1123598816738675201), (1123598817738675242, 1123598815738675242, 1123598816738675201), (1123598817738675243, 1123598815738675243, 1123598816738675201), (1123598817738675244, 1123598815738675244, 1123598816738675201), (1123598817738675245, 1123598815738675245, 1123598816738675201), (1123598817738675246, 1123598815738675246, 1123598816738675201), (1123598817738675247, 1123598815738675247, 1123598816738675201), (1123598817738675248, 1123598815738675248, 1123598816738675201), (1123598817738675249, 1123598815738675249, 1123598816738675201), (1123598817738675250, 1123598815738675250, 1123598816738675201), (1123598817738675251, 1123598815738675251, 1123598816738675201), (1123598817738675252, 1123598815738675252, 1123598816738675201), (1123598817738675253, 1123598815738675253, 1123598816738675201), (1123598817738675254, 1123598815738675254, 1123598816738675201), (1123598817738675255, 1123598815738675255, 1123598816738675201), (1123598817738675256, 1123598815738675256, 1123598816738675201), (1123598817738675257, 1123598815738675257, 1123598816738675201), (1123598817738675258, 1123598815738675258, 1123598816738675201), (1123598817738675259, 1123598815738675259, 1123598816738675201), (1123598817738675260, 1123598815738675260, 1123598816738675201), (1123598817738675261, 1123598815738675261, 1123598816738675201), (1123598817738675262, 1123598815738675262, 1123598816738675201), (1123598817738675263, 1123598815738675263, 1123598816738675201), (1123598817738675264, 1123598815738675264, 1123598816738675201), (1123598817738675265, 1123598815738675265, 1123598816738675201), (1123598817738675266, 1123598815738675266, 1123598816738675201), (1123598817738675267, 1123598815738675267, 1123598816738675201), (1123598817738675268, 1123598815738675268, 1123598816738675201), (1123598817738675269, 1123598815738675269, 1123598816738675201), (1123598817738675270, 1123598815738675270, 1123598816738675201), (1161272893875225001, 1164733389668962251, 1123598816738675201), (1161272893875225002, 1164733389668962252, 1123598816738675201), (1161272893875225003, 1164733389668962253, 1123598816738675201), (1161272893875225004, 1164733389668962254, 1123598816738675201), (1161272893875225005, 1164733389668962255, 1123598816738675201), (1161272893875225006, 1164733389668962256, 1123598816738675201), (1161272893875226001, 1164733399668962201, 1123598816738675201), (1161272893875226002, 1164733399668962202, 1123598816738675201), (1161272893875226003, 1164733399668962203, 1123598816738675201), (1161272893875226004, 1164733399668962204, 1123598816738675201), (1161272893875226005, 1164733399668962205, 1123598816738675201), (1161272893875226006, 1164733399668962206, 1123598816738675201), (1161272893875226007, 1164733399668962207, 1123598816738675201), (1161272893875228001, 1164733399669962301, 1123598816738675201), (1161272893875228002, 1164733399669962302, 1123598816738675201), (1161272893875228003, 1164733399669962303, 1123598816738675201), (1296030340342616066, 1123598815738675201, 1123598816738675202), (1296030340367781890, 1123598815738675202, 1123598816738675202), (1296030340384559105, 1123598815738675219, 1123598816738675202), (1296030340401336321, 1123598815738675220, 1123598816738675202), (1296030340413919233, 1123598815738675221, 1123598816738675202), (1296030340434890753, 1123598815738675222, 1123598816738675202), (1455363615489028098, 1123598815738675307, 1123598816738675201), (1455363615505805313, 1123598815738675309, 1123598816738675201), (1455363615518388225, 1123598815738675310, 1123598816738675201), (1977345456189423620, 1123598815738675208, 1123598816738675201), (1977345456189423621, 1123598815738675313, 1123598816738675201), (1977345456189423622, 1123598815738675314, 1123598816738675201), (1977345456189423623, 1123598815738675315, 1123598816738675201), (1977345456189423624, 1123598815738675316, 1123598816738675201), (1977345456189423625, 1123598815738675317, 1123598816738675201), (2006703481530257413, 1123598815738675311, 1123598816738675201), (2006703481530257414, 1123598815738675312, 1123598816738675201);
+INSERT INTO blade_role_menu (id, menu_id, role_id) VALUES
+  (220260909200000001, 220260909100000001, 1123598816738675201),
+  (220260909200000002, 220260909100000002, 1123598816738675201),
+  (220260909200000003, 220260909100000003, 1123598816738675201),
+  (220260909200000004, 220260909100000004, 1123598816738675201),
+  (220260909200000005, 220260909100000005, 1123598816738675201),
+  (220260909200000006, 220260909100000006, 1123598816738675201),
+  (220260909200000007, 220260909100000007, 1123598816738675201),
+  (220260909200000008, 220260909100000008, 1123598816738675201),
+  (220260909200000009, 220260909100000009, 1123598816738675201),
+  (220260909200000010, 220260909100000010, 1123598816738675201),
+  (220260909200000011, 220260909100000011, 1123598816738675201),
+  (220260917200000001, 220260917100000001, 1123598816738675201),
+  (220260917200000002, 220260917100000002, 1123598816738675201);
 COMMIT;
 
 -- ----------------------------
@@ -626,7 +707,7 @@ CREATE TABLE `blade_user`  (
   `code` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '用户编号',
   `account` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '账号',
   `password` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '密码',
-  `name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '昵称',
+  `name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '昵称',
   `real_name` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '真名',
   `avatar` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '头像',
   `email` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '邮箱',
@@ -643,7 +724,8 @@ CREATE TABLE `blade_user`  (
   `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
   `status` int NULL DEFAULT NULL COMMENT '状态',
   `is_deleted` int NULL DEFAULT 0 COMMENT '是否已删除',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `uk_blade_user_tenant_account` (`tenant_id`, `account`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户表';
 
 -- ----------------------------
@@ -689,6 +771,8 @@ CREATE TABLE blade_ai_prompt (
   id bigint NOT NULL COMMENT '主键',
   prompt_code varchar(64) NOT NULL COMMENT '稳定编码',
   prompt_name varchar(100) NOT NULL COMMENT '提示词名称',
+  prompt_type varchar(32) NOT NULL DEFAULT 'GENERAL' COMMENT '提示词业务类型',
+  publish_mode tinyint NOT NULL DEFAULT 1 COMMENT '发布方式:1手工发布,2自动发布',
   fixed_instruction text NULL COMMENT '当前草稿固定指令',
   user_template text NULL COMMENT '当前草稿用户输入模板',
   variable_schema text NOT NULL COMMENT '当前草稿变量定义JSON',
@@ -699,7 +783,7 @@ CREATE TABLE blade_ai_prompt (
   lock_version bigint NOT NULL DEFAULT 0 COMMENT '并发控制版本',
   status int NOT NULL DEFAULT 0 COMMENT '0草稿 1已发布 2已停用',
   tenant_id varchar(12) NOT NULL DEFAULT '000000' COMMENT '租户ID',
-  create_user bigint NULL DEFAULT NULL COMMENT '创建人',
+  create_user bigint NOT NULL COMMENT '创建人/数据所有者',
   create_dept bigint NULL DEFAULT NULL COMMENT '创建部门',
   create_time datetime NULL DEFAULT NULL COMMENT '创建时间',
   update_user bigint NULL DEFAULT NULL COMMENT '修改人',
@@ -709,7 +793,9 @@ CREATE TABLE blade_ai_prompt (
   UNIQUE KEY uk_blade_ai_prompt_tenant_code (tenant_id, prompt_code),
   KEY idx_blade_ai_prompt_tenant_status (tenant_id, status, is_deleted),
   KEY idx_blade_ai_prompt_tenant_name (tenant_id, prompt_name, is_deleted),
-  KEY idx_blade_ai_prompt_current_version (tenant_id, current_version_id)
+  KEY idx_blade_ai_prompt_current_version (tenant_id, current_version_id),
+  KEY idx_blade_ai_prompt_tenant_creator (tenant_id, create_user, is_deleted, update_time),
+  KEY idx_blade_ai_prompt_tenant_type (tenant_id, prompt_type, is_deleted, update_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='AI提示词';
 
 DROP TABLE IF EXISTS blade_ai_prompt_version;
@@ -719,10 +805,11 @@ CREATE TABLE blade_ai_prompt_version (
   version_no int NOT NULL COMMENT '版本号',
   prompt_code varchar(64) NOT NULL COMMENT '稳定编码快照',
   prompt_name varchar(100) NOT NULL COMMENT '名称快照',
+  prompt_type varchar(32) NOT NULL DEFAULT 'GENERAL' COMMENT '提示词类型快照',
   fixed_instruction text NULL COMMENT '固定指令快照',
   user_template text NULL COMMENT '用户模板快照',
   variable_schema text NOT NULL COMMENT '变量定义快照JSON',
-  source_type int NOT NULL DEFAULT 1 COMMENT '1普通发布 2回滚发布',
+  source_type int NOT NULL DEFAULT 1 COMMENT '1手工发布 2回滚发布 3自动发布',
   source_version_id bigint NULL DEFAULT NULL COMMENT '回滚来源版本ID',
   source_draft_revision bigint NULL DEFAULT NULL COMMENT '来源草稿修订号',
   content_hash char(64) NOT NULL COMMENT '快照SHA-256',
@@ -745,15 +832,118 @@ CREATE TABLE blade_ai_prompt_version (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='AI提示词发布版本';
 
 INSERT INTO blade_scope_api (id, menu_id, resource_code, scope_name, scope_path, scope_type, remark, status, is_deleted) VALUES
-(220260909000000001, NULL, 'ai:prompt:view', '提示词查看', '/blade-ai/prompt', 2, '提示词列表、详情和版本查询', 1, 0),
-(220260909000000002, NULL, 'ai:prompt:create', '提示词新增', '/blade-ai/prompt/create', 2, '创建提示词草稿', 1, 0),
-(220260909000000003, NULL, 'ai:prompt:edit', '提示词编辑', '/blade-ai/prompt/update', 2, '编辑提示词草稿', 1, 0),
-(220260909000000004, NULL, 'ai:prompt:copy', '提示词复制', '/blade-ai/prompt/copy', 2, '复制提示词草稿', 1, 0),
-(220260909000000005, NULL, 'ai:prompt:delete', '提示词删除', '/blade-ai/prompt/remove', 2, '删除从未发布的草稿', 1, 0),
-(220260909000000006, NULL, 'ai:prompt:preview', '提示词预览', '/blade-ai/prompt/preview', 2, '无状态模板预览', 1, 0),
-(220260909000000007, NULL, 'ai:prompt:publish', '提示词发布', '/blade-ai/prompt/publish', 2, '发布不可变版本', 1, 0),
-(220260909000000008, NULL, 'ai:prompt:disable', '提示词停用', '/blade-ai/prompt/disable', 2, '停用当前发布提示词', 1, 0),
-(220260909000000009, NULL, 'ai:prompt:rollback', '提示词回滚', '/blade-ai/prompt/rollback', 2, '基于历史版本生成新版本', 1, 0),
-(220260909000000010, NULL, 'ai:prompt:runtime', '提示词运行时读取', '/feign/client/prompt/render', 2, '内部业务服务运行时渲染', 1, 0);
+(220260909000000001, 220260909100000002, 'ai:prompt:view', '提示词查看', '/blade-ai/prompt', 2, '提示词列表、详情和版本查询', 1, 0),
+(220260909000000002, 220260909100000002, 'ai:prompt:create', '提示词新增', '/blade-ai/prompt/create', 2, '创建提示词草稿', 1, 0),
+(220260909000000003, 220260909100000002, 'ai:prompt:edit', '提示词编辑', '/blade-ai/prompt/update', 2, '编辑提示词草稿', 1, 0),
+(220260909000000004, 220260909100000002, 'ai:prompt:copy', '提示词复制', '/blade-ai/prompt/copy', 2, '复制提示词草稿', 1, 0),
+(220260909000000005, 220260909100000002, 'ai:prompt:delete', '提示词删除', '/blade-ai/prompt/remove', 2, '删除从未发布的草稿', 1, 0),
+(220260909000000006, 220260909100000002, 'ai:prompt:preview', '提示词预览', '/blade-ai/prompt/preview', 2, '无状态模板预览', 1, 0),
+(220260909000000007, 220260909100000002, 'ai:prompt:publish', '提示词发布', '/blade-ai/prompt/publish', 2, '发布不可变版本', 1, 0),
+(220260909000000008, 220260909100000002, 'ai:prompt:disable', '提示词停用', '/blade-ai/prompt/disable', 2, '停用当前发布提示词', 1, 0),
+(220260909000000009, 220260909100000002, 'ai:prompt:rollback', '提示词回滚', '/blade-ai/prompt/rollback', 2, '基于历史版本生成新版本', 1, 0),
+(220260909000000010, NULL, 'ai:prompt:runtime', '提示词运行时读取', '/feign/client/prompt/render', 2, '内部业务服务运行时渲染', 1, 0),
+(220260917000000001, 220260909100000002, 'ai:prompt:reverse', '图片提示词反推', '/blade-ai/prompt/reverse', 2, '上传单图并返回受控标签和生图提示词', 1, 0),
+(220260917000000002, 220260909100000002, 'ai:prompt:system-manage', '系统提示词策略管理', '/blade-ai/prompt/**', 2, '维护SYSTEM提示词和保留分析策略', 1, 0);
+
+INSERT INTO blade_scope_data
+  (id, menu_id, resource_code, scope_name, scope_field, scope_class, scope_column, scope_type,
+   scope_value, remark, status, is_deleted)
+VALUES
+(220260916500000001, 220260909100000002, 'ai:prompt:data:page:own', '提示词分页本人可见', '*',
+ 'org.springblade.ai.prompt.mapper.PromptMapper.selectScopePage', 'create_user', 2, NULL,
+ '提示词分页按创建人过滤', 1, 0),
+(220260916500000002, 220260909100000002, 'ai:prompt:data:page:all', '提示词分页全部可见', '*',
+ 'org.springblade.ai.prompt.mapper.PromptMapper.selectScopePage', '-', 1, NULL,
+ '提示词分页查看当前租户全部数据', 1, 0),
+(220260916500000003, 220260909100000002, 'ai:prompt:data:resource:own', '提示词资源本人可见', '*',
+ 'org.springblade.ai.prompt.mapper.PromptMapper.selectScopePrompt', 'create_user', 2, NULL,
+ '提示词详情、版本和写操作按创建人过滤', 1, 0),
+(220260916500000004, 220260909100000002, 'ai:prompt:data:resource:all', '提示词资源全部可见', '*',
+ 'org.springblade.ai.prompt.mapper.PromptMapper.selectScopePrompt', '-', 1, NULL,
+ '提示词详情、版本和写操作查看当前租户全部数据', 1, 0);
+
+INSERT INTO blade_role_scope (id, scope_category, scope_id, role_id) VALUES
+(220260916500000101, 1, 220260916500000002, 1123598816738675201),
+(220260916500000102, 1, 220260916500000004, 1123598816738675201),
+(220260916500000103, 1, 220260916500000001, 1123598816738675202),
+(220260916500000104, 1, 220260916500000003, 1123598816738675202),
+(220260909300000001, 2, 220260909000000001, 1123598816738675201),
+(220260909300000002, 2, 220260909000000002, 1123598816738675201),
+(220260909300000003, 2, 220260909000000003, 1123598816738675201),
+(220260909300000004, 2, 220260909000000004, 1123598816738675201),
+(220260909300000005, 2, 220260909000000005, 1123598816738675201),
+(220260909300000006, 2, 220260909000000006, 1123598816738675201),
+(220260909300000007, 2, 220260909000000007, 1123598816738675201),
+(220260909300000008, 2, 220260909000000008, 1123598816738675201),
+(220260909300000009, 2, 220260909000000009, 1123598816738675201),
+(220260917300000001, 2, 220260917000000001, 1123598816738675201),
+(220260917300000002, 2, 220260917000000002, 1123598816738675201),
+(220260917300000003, 2, 220260917000000003, 1123598816738675201);
+
+-- ----------------------------
+-- REQ-2026-002 tag category management
+-- ----------------------------
+DROP TABLE IF EXISTS blade_tag_category;
+CREATE TABLE blade_tag_category (
+  id bigint NOT NULL COMMENT '主键',
+  category_code varchar(64) NOT NULL COMMENT '分类稳定编码',
+  category_name varchar(100) NOT NULL COMMENT '分类名称',
+  selection_mode tinyint NOT NULL DEFAULT 1 COMMENT '选择模式:1单选 2多选',
+  max_select_count int NOT NULL DEFAULT 1 COMMENT '最大可选数量',
+  sort int NOT NULL DEFAULT 0 COMMENT '排序',
+  remark varchar(500) NULL DEFAULT NULL COMMENT '说明',
+  lock_version bigint NOT NULL DEFAULT 0 COMMENT '并发控制版本',
+  status int NOT NULL DEFAULT 1 COMMENT '状态:0停用 1启用',
+  tenant_id varchar(12) NOT NULL DEFAULT '000000' COMMENT '租户ID',
+  create_user bigint NULL DEFAULT NULL COMMENT '创建人',
+  create_dept bigint NULL DEFAULT NULL COMMENT '创建部门',
+  create_time datetime NULL DEFAULT NULL COMMENT '创建时间',
+  update_user bigint NULL DEFAULT NULL COMMENT '修改人',
+  update_time datetime NULL DEFAULT NULL COMMENT '修改时间',
+  is_deleted int NOT NULL DEFAULT 0 COMMENT '是否已删除',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_blade_tag_category_tenant_code (tenant_id, category_code),
+  KEY idx_blade_tag_category_list (tenant_id, is_deleted, sort, create_time, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='标签分类';
+
+DROP TABLE IF EXISTS blade_tag;
+CREATE TABLE blade_tag (
+  id bigint NOT NULL COMMENT '主键',
+  category_id bigint NOT NULL COMMENT '所属分类ID',
+  parent_id bigint NOT NULL DEFAULT 0 COMMENT '父标签ID',
+  ancestors varchar(512) NOT NULL DEFAULT '0' COMMENT '祖先标签ID路径',
+  depth tinyint NOT NULL DEFAULT 1 COMMENT '层级深度',
+  tag_code varchar(64) NOT NULL COMMENT '标签稳定编码',
+  tag_name varchar(100) NOT NULL COMMENT '标签名称',
+  sort int NOT NULL DEFAULT 0 COMMENT '排序',
+  remark varchar(500) NULL DEFAULT NULL COMMENT '说明',
+  lock_version bigint NOT NULL DEFAULT 0 COMMENT '并发控制版本',
+  status int NOT NULL DEFAULT 1 COMMENT '状态:0停用 1启用',
+  tenant_id varchar(12) NOT NULL DEFAULT '000000' COMMENT '租户ID',
+  create_user bigint NULL DEFAULT NULL COMMENT '创建人',
+  create_dept bigint NULL DEFAULT NULL COMMENT '创建部门',
+  create_time datetime NULL DEFAULT NULL COMMENT '创建时间',
+  update_user bigint NULL DEFAULT NULL COMMENT '修改人',
+  update_time datetime NULL DEFAULT NULL COMMENT '修改时间',
+  is_deleted int NOT NULL DEFAULT 0 COMMENT '是否已删除',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_blade_tag_tenant_category_code (tenant_id, category_id, tag_code),
+  KEY idx_blade_tag_tree (tenant_id, category_id, is_deleted, sort, create_time, id),
+  KEY idx_blade_tag_parent (tenant_id, category_id, parent_id, is_deleted),
+  KEY idx_blade_tag_option (tenant_id, category_id, status, is_deleted, sort, create_time, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='标签';
+
+INSERT INTO blade_scope_api (id, menu_id, resource_code, scope_name, scope_path, scope_type, remark, status, is_deleted) VALUES
+(220260910000000001, 220260910100000001, 'system:tag-category:view', '标签分类查看', '/blade-system/tag-category', 2, '标签分类列表与详情查询', 1, 0),
+(220260910000000002, 220260910100000001, 'system:tag-category:create', '标签分类新增', '/blade-system/tag-category/create', 2, '创建标签分类', 1, 0),
+(220260910000000003, 220260910100000001, 'system:tag-category:edit', '标签分类编辑', '/blade-system/tag-category/update', 2, '编辑标签分类', 1, 0),
+(220260910000000004, 220260910100000001, 'system:tag-category:status', '标签分类状态', '/blade-system/tag-category/status', 2, '启用或停用标签分类', 1, 0),
+(220260910000000005, 220260910100000001, 'system:tag-category:delete', '标签分类删除', '/blade-system/tag-category/remove', 2, '删除空标签分类', 1, 0),
+(220260910000000006, 220260910100000001, 'system:tag:view', '标签查看', '/blade-system/tag', 2, '标签列表、详情、树与有效选项查询', 1, 0),
+(220260910000000007, 220260910100000001, 'system:tag:create', '标签新增', '/blade-system/tag/create', 2, '创建标签', 1, 0),
+(220260910000000008, 220260910100000001, 'system:tag:edit', '标签编辑', '/blade-system/tag/update', 2, '编辑标签和调整层级', 1, 0),
+(220260910000000009, 220260910100000001, 'system:tag:status', '标签状态', '/blade-system/tag/status', 2, '启用或停用标签', 1, 0),
+(220260910000000010, 220260910100000001, 'system:tag:delete', '标签删除', '/blade-system/tag/remove', 2, '删除叶子标签', 1, 0),
+(220260917000000003, NULL, 'system:tag:runtime', '标签运行时读取', '/feign/client/tag-runtime/taxonomy', 2, '内部服务读取当前租户有效标签体系', 1, 0);
 
 SET FOREIGN_KEY_CHECKS = 1;

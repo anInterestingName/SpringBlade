@@ -26,6 +26,7 @@ import org.springblade.ai.prompt.engine.PromptValidationResult;
 import org.springblade.ai.prompt.entity.Prompt;
 import org.springblade.ai.prompt.entity.PromptVersion;
 import org.springblade.ai.prompt.enums.PromptStatus;
+import org.springblade.ai.prompt.enums.PromptType;
 import org.springblade.ai.prompt.mapper.PromptVersionMapper;
 import org.springblade.ai.prompt.service.IPromptRenderService;
 import org.springblade.ai.prompt.service.IPromptService;
@@ -48,9 +49,13 @@ public class PromptRenderServiceImpl implements IPromptRenderService {
 
 	@Override
 	public PromptRenderVO preview(PromptPreviewDTO dto) {
+		PromptType type = PromptType.of(dto.getPromptType());
+		if (type == null) {
+			throw new ServiceException(PromptResultCode.PROMPT_TYPE_INVALID);
+		}
 		PromptValidationResult validation = validator.validateRender(dto.getFixedInstruction(), dto.getUserTemplate(),
 			dto.getVariables(), dto.getTestVariables());
-		return renderer.render(null, null, null, dto.getFixedInstruction(), dto.getUserTemplate(), validation);
+		return renderer.render(null, type.getCode(), null, null, dto.getFixedInstruction(), dto.getUserTemplate(), validation);
 	}
 
 	@Override
@@ -76,8 +81,9 @@ public class PromptRenderServiceImpl implements IPromptRenderService {
 		if (!validation.isValid()) {
 			throw new ServiceException(PromptResultCode.PROMPT_VARIABLE_INVALID.detail(firstIssue(validation)));
 		}
-		PromptRenderVO rendered = renderer.render(version.getPromptCode(), version.getId(), version.getVersionNo(),
+		PromptRenderVO rendered = renderer.render(version.getPromptCode(), version.getPromptType(), version.getId(), version.getVersionNo(),
 			version.getFixedInstruction(), version.getUserTemplate(), validation);
+		rendered.setContentHash(version.getContentHash());
 		if (!Boolean.TRUE.equals(rendered.getValid())) {
 			var issue = rendered.getErrors().getFirst();
 			throw new ServiceException(PromptResultCode.PROMPT_VARIABLE_INVALID.detail(issue.getMessage()));

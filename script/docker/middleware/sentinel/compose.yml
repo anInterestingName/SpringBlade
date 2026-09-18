@@ -1,0 +1,16 @@
+services:
+  sentinel:
+    image: bladex/sentinel-dashboard:1.8.0
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - ${SENTINEL_BIND_ADDRESS:-127.0.0.1}:${SENTINEL_PORT:-8858}:8858
+    networks:
+      springblade-backend:
+        aliases:
+          - springblade-sentinel
+
+networks:
+  springblade-backend:
+    external: true

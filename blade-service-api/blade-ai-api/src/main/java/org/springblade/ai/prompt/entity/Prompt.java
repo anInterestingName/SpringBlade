@@ -52,6 +52,12 @@ public class Prompt extends TenantEntity {
 	@Schema(description = "提示词名称")
 	private String promptName;
 
+	@Schema(description = "提示词业务类型")
+	private String promptType;
+
+	@Schema(description = "发布方式")
+	private Integer publishMode;
+
 	@Schema(description = "当前草稿固定指令")
 	private String fixedInstruction;
 

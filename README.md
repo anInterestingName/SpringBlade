@@ -130,6 +130,7 @@ SpringBlade
 | SpringBlade开发手册一览         | [https://gitee.com/smallc/SpringBlade/wikis/SpringBlade开发手册](https://gitee.com/smallc/SpringBlade/wikis/SpringBlade开发手册) |
 | SpringBlade常见问题集锦         | [https://sns.bladex.cn/article-14966.html](https://sns.bladex.cn/article-14966.html)                                     |
 | SpringBlade基于Rainbond部署   | [https://www.rainbond.com/docs/micro-service/example/blade](https://www.rainbond.com/docs/micro-service/example/blade)   |
+| Docker Compose 与 GitHub Actions 部署 | [部署教程](doc/guide/docker-compose-github-actions-deployment.md) |
 
 
 ## 免费公开课

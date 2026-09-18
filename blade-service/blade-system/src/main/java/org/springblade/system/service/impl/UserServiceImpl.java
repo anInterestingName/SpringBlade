@@ -35,19 +35,24 @@ import org.springblade.core.tenant.TenantGuard;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.constant.BladeConstant;
 import org.springblade.core.tool.utils.*;
+import org.springblade.system.entity.Role;
 import org.springblade.system.entity.Tenant;
 import org.springblade.system.feign.ISysClient;
 import org.springblade.system.user.entity.User;
 import org.springblade.system.user.entity.UserInfo;
 import org.springblade.system.user.entity.UserOauth;
+import org.springblade.system.user.constant.RegisterResultCode;
+import org.springblade.system.user.dto.UserRegisterCommand;
 import org.springblade.system.user.vo.UserVO;
 import org.springblade.system.excel.UserExcel;
 import org.springblade.system.mapper.UserMapper;
 import org.springblade.system.service.IRoleService;
+import org.springblade.system.service.ITenantService;
 import org.springblade.system.service.IUserOauthService;
 import org.springblade.system.service.IUserService;
 import org.springblade.system.wrapper.UserWrapper;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
@@ -68,9 +73,13 @@ import static org.springblade.core.tenant.TenantGuard.EntityType.USER;
 public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implements IUserService {
 	private static final String GUEST_NAME = "guest";
 	private static final String MINUS_ONE = "-1";
+	private static final String USER_ROLE_ALIAS = "user";
+	private static final String ACCOUNT_PATTERN = "[A-Za-z0-9._-]{4,32}";
+	private static final String PASSWORD_DIGEST_PATTERN = "[0-9a-fA-F]{40}";
 
 	private ISysClient sysClient;
 	private IRoleService roleService;
+	private ITenantService tenantService;
 	private IUserOauthService userOauthService;
 	private BladeRedis bladeRedis;
 
@@ -332,6 +341,66 @@ public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implement
 		userOauth.setTenantId(user.getTenantId());
 		boolean oauthTemp = userOauthService.updateById(userOauth);
 		return (userTemp && oauthTemp);
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public boolean register(UserRegisterCommand command) {
+		if (command == null || !StringUtil.isNotBlank(command.getTenantId())
+			|| !StringUtil.isNotBlank(command.getAccount()) || !StringUtil.isNotBlank(command.getName())
+			|| !StringUtil.isNotBlank(command.getPasswordDigest())
+			|| !command.getPasswordDigest().matches(PASSWORD_DIGEST_PATTERN)) {
+			throw new ServiceException(RegisterResultCode.REGISTER_REQUEST_INVALID);
+		}
+
+		String tenantId = command.getTenantId().trim();
+		String account = command.getAccount().trim();
+		String name = command.getName().trim();
+		if (tenantId.length() > 12 || !account.matches(ACCOUNT_PATTERN) || name.length() > 32) {
+			throw new ServiceException(RegisterResultCode.REGISTER_REQUEST_INVALID);
+		}
+
+		Tenant tenant = tenantService.getActiveByTenantId(tenantId);
+		if (tenant == null) {
+			throw new ServiceException(RegisterResultCode.TENANT_INVALID);
+		}
+
+		List<Role> roles = roleService.list(Wrappers.<Role>query().lambda()
+			.eq(Role::getTenantId, tenantId)
+			.eq(Role::getRoleAlias, USER_ROLE_ALIAS)
+			.eq(Role::getIsDeleted, BladeConstant.DB_NOT_DELETED));
+		if (roles.size() != 1 || roles.get(0).getId() == null) {
+			throw new ServiceException(RegisterResultCode.REGISTRATION_ROLE_UNAVAILABLE);
+		}
+
+		if (baseMapper.countByTenantAndAccount(tenantId, account) > 0) {
+			throw new ServiceException(RegisterResultCode.ACCOUNT_DUPLICATE);
+		}
+
+		User user = new User();
+		user.setTenantId(tenantId);
+		user.setAccount(account);
+		user.setName(name);
+		user.setPassword(command.getPasswordDigest());
+		user.setRoleId(String.valueOf(roles.get(0).getId()));
+		user.setDeptId(MINUS_ONE);
+		user.setPostId(MINUS_ONE);
+		user.setStatus(1);
+		user.setIsDeleted(BladeConstant.DB_NOT_DELETED);
+
+		try {
+			if (!save(user)) {
+				throw new ServiceException(RegisterResultCode.REGISTER_FAILED);
+			}
+		} catch (DuplicateKeyException exception) {
+			throw new ServiceException(RegisterResultCode.ACCOUNT_DUPLICATE, exception);
+		}
+		try {
+			CacheUtil.clear(CacheConstant.USER_CACHE);
+		} catch (RuntimeException ignored) {
+			// 用户已在本地事务中保存成功，缓存异常由后续查询回源刷新。
+		}
+		return true;
 	}
 
 }

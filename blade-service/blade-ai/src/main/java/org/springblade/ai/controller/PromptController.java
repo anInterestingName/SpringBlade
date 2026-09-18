@@ -65,8 +65,10 @@ public class PromptController extends BladeController {
 	@PreAuth(permission = PromptPermission.VIEW)
 	@Operation(summary = "提示词分页")
 	public R<IPage<PromptListVO>> list(@RequestParam(required = false) String name,
-		@RequestParam(required = false) String code, @RequestParam(required = false) Integer status, Query query) {
-		return R.data(promptService.selectPage(name, code, status, query));
+		@RequestParam(required = false) String code, @RequestParam(required = false) Integer status,
+		@RequestParam(required = false) String promptType,
+		@RequestParam(required = false) Integer publishMode, Query query) {
+		return R.data(promptService.selectPage(name, code, status, promptType, publishMode, query));
 	}
 
 	@GetMapping("/detail")

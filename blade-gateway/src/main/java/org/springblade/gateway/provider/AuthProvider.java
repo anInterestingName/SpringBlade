@@ -34,6 +34,7 @@ public class AuthProvider {
 		DEFAULT_SKIP_URL.add("/example");
 		DEFAULT_SKIP_URL.add("/token/**");
 		DEFAULT_SKIP_URL.add("/captcha/**");
+		DEFAULT_SKIP_URL.add("/register/**");
 		DEFAULT_SKIP_URL.add("/actuator/health/**");
 		DEFAULT_SKIP_URL.add("/auth/**");
 		DEFAULT_SKIP_URL.add("/oauth/**");

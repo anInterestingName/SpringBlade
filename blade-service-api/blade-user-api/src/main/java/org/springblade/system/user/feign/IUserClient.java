@@ -18,6 +18,7 @@ package org.springblade.system.user.feign;
 
 import org.springblade.core.launch.constant.AppConstant;
 import org.springblade.core.tool.api.R;
+import org.springblade.system.user.dto.UserRegisterCommand;
 import org.springblade.system.user.entity.UserInfo;
 import org.springblade.system.user.entity.UserOauth;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -67,4 +68,13 @@ public interface IUserClient {
 	 */
 	@PostMapping(API_PREFIX + "/user-auth-info")
 	R<UserInfo> userAuthInfo(@RequestBody UserOauth userOauth);
+
+	/**
+	 * 自助注册用户
+	 *
+	 * @param command 受控注册命令
+	 * @return 注册结果
+	 */
+	@PostMapping(API_PREFIX + "/register")
+	R<Boolean> register(@RequestBody UserRegisterCommand command);
 }

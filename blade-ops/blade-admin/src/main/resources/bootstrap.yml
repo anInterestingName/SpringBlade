@@ -15,6 +15,11 @@ spring:
         ignored-services:
           - consul
           - serverAddr
+#      monitor:
+#        # 给服务冷启动和外部依赖健康检查留出响应时间。
+#        status-interval: 30s
+#        status-lifetime: 30s
+#        default-timeout: 20s
 
 management:
   endpoints:

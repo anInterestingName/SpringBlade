@@ -18,33 +18,19 @@ package org.springblade.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import lombok.AllArgsConstructor;
 import org.springblade.core.cache.utils.CacheUtil;
 import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.secure.utils.SecureUtil;
-import org.springblade.core.tenant.TenantId;
 import org.springblade.core.tool.constant.BladeConstant;
-import org.springblade.core.tool.utils.Func;
-import org.springblade.system.entity.Dept;
-import org.springblade.system.entity.Post;
-import org.springblade.system.entity.Role;
 import org.springblade.system.entity.Tenant;
 import org.springblade.system.mapper.TenantMapper;
-import org.springblade.system.service.IDeptService;
-import org.springblade.system.service.IPostService;
-import org.springblade.system.service.IRoleService;
 import org.springblade.system.service.ITenantService;
-import org.springblade.system.service.IUserService;
-import org.springblade.system.user.entity.User;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 服务实现类
@@ -52,14 +38,7 @@ import java.util.stream.Collectors;
  * @author Chill
  */
 @Service
-@AllArgsConstructor
 public class TenantServiceImpl extends BaseServiceImpl<TenantMapper, Tenant> implements ITenantService {
-
-	private final TenantId tenantId;
-	private final IRoleService roleService;
-	private final IDeptService deptService;
-	private final IPostService postService;
-	private final IUserService userService;
 
 	@Override
 	public IPage<Tenant> selectTenantPage(IPage<Tenant> page, Tenant tenant) {
@@ -72,60 +51,11 @@ public class TenantServiceImpl extends BaseServiceImpl<TenantMapper, Tenant> imp
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public boolean saveTenant(Tenant tenant) {
-		if (Func.isEmpty(tenant.getId())) {
-			List<Tenant> tenants = baseMapper.selectList(Wrappers.<Tenant>query().lambda().eq(Tenant::getIsDeleted, BladeConstant.DB_NOT_DELETED));
-			List<String> codes = tenants.stream().map(Tenant::getTenantId).collect(Collectors.toList());
-			String tenantId = getTenantId(codes);
-			tenant.setTenantId(tenantId);
-			// 新建租户对应的默认角色
-			Role role = new Role();
-			role.setTenantId(tenantId);
-			role.setParentId(0L);
-			role.setRoleName("管理员");
-			role.setRoleAlias("admin");
-			role.setSort(2);
-			role.setIsDeleted(0);
-			roleService.save(role);
-			// 新建租户对应的默认部门
-			Dept dept = new Dept();
-			dept.setTenantId(tenantId);
-			dept.setParentId(0L);
-			dept.setDeptName(tenant.getTenantName());
-			dept.setFullName(tenant.getTenantName());
-			dept.setSort(2);
-			dept.setIsDeleted(0);
-			deptService.save(dept);
-			// 新建租户对应的默认岗位
-			Post post = new Post();
-			post.setTenantId(tenantId);
-			post.setCategory(1);
-			post.setPostCode("ceo");
-			post.setPostName("首席执行官");
-			post.setSort(1);
-			postService.save(post);
-			// 新建租户对应的默认管理用户
-			User user = new User();
-			user.setTenantId(tenantId);
-			user.setName("admin");
-			user.setRealName("admin");
-			user.setAccount("admin");
-			user.setPassword("admin");
-			user.setRoleId(String.valueOf(role.getId()));
-			user.setDeptId(String.valueOf(dept.getId()));
-			user.setPostId(String.valueOf(post.getId()));
-			user.setBirthday(new Date());
-			user.setSex(1);
-			user.setIsDeleted(BladeConstant.DB_NOT_DELETED);
-			boolean temp = super.saveOrUpdate(tenant);
-			boolean result = userService.submit(user);
-			return temp && result;
-		}
-		boolean tenantResult = super.saveOrUpdate(tenant);
-		// 租户信息变更后清理系统缓存，保证 SysCache 中的租户数据一致性
-		CacheUtil.clear(CacheUtil.SYS_CACHE);
-		return tenantResult;
+	public Tenant getActiveByTenantId(String tenantId) {
+		return getOne(Wrappers.<Tenant>query().lambda()
+			.eq(Tenant::getTenantId, tenantId)
+			.eq(Tenant::getStatus, 1)
+			.eq(Tenant::getIsDeleted, BladeConstant.DB_NOT_DELETED));
 	}
 
 	@Override
@@ -134,20 +64,6 @@ public class TenantServiceImpl extends BaseServiceImpl<TenantMapper, Tenant> imp
 		// 租户删除后清理系统缓存，避免 SysCache 中残留已删除租户导致游客注册等场景误放行
 		CacheUtil.clear(CacheUtil.SYS_CACHE);
 		return result;
-	}
-
-	/**
-	 * 生成不与已有集合冲突的租户编号
-	 *
-	 * @param codes 已存在的租户编号集合，用于排重
-	 * @return 未被占用的租户编号
-	 */
-	private String getTenantId(List<String> codes) {
-		String code = tenantId.generate();
-		if (codes.contains(code)) {
-			return getTenantId(codes);
-		}
-		return code;
 	}
 
 	@Override

@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springblade.ai.prompt.engine.PromptSchemaCodec;
 import org.springblade.ai.prompt.entity.Prompt;
 import org.springblade.ai.prompt.enums.PromptStatus;
+import org.springblade.ai.prompt.enums.PromptType;
+import org.springblade.ai.prompt.enums.PublishMode;
 import org.springblade.ai.prompt.vo.PromptActionVO;
 import org.springblade.ai.prompt.vo.PromptDetailVO;
 import org.springblade.ai.prompt.vo.PromptListVO;
@@ -35,6 +37,7 @@ public class PromptWrapper {
 		vo.setId(prompt.getId());
 		vo.setPromptCode(prompt.getPromptCode());
 		vo.setPromptName(prompt.getPromptName());
+		applyClassification(prompt, vo);
 		vo.setStatus(prompt.getStatus());
 		vo.setStatusName(PromptStatus.of(prompt.getStatus()).getLabel());
 		vo.setCurrentVersionNo(prompt.getCurrentVersionNo());
@@ -53,6 +56,12 @@ public class PromptWrapper {
 		vo.setId(prompt.getId());
 		vo.setPromptCode(prompt.getPromptCode());
 		vo.setPromptName(prompt.getPromptName());
+		PromptType type = PromptType.of(prompt.getPromptType());
+		vo.setPromptType(prompt.getPromptType());
+		vo.setPromptTypeName(type == null ? null : type.getLabel());
+		PublishMode mode = PublishMode.of(prompt.getPublishMode());
+		vo.setPublishMode(prompt.getPublishMode());
+		vo.setPublishModeName(mode == null ? null : mode.getLabel());
 		vo.setFixedInstruction(prompt.getFixedInstruction());
 		vo.setUserTemplate(prompt.getUserTemplate());
 		vo.setVariables(schemaCodec.decode(prompt.getVariableSchema()));
@@ -73,9 +82,18 @@ public class PromptWrapper {
 		PromptActionVO actions = new PromptActionVO();
 		actions.setEditable(true);
 		actions.setRemovable(prompt.getCurrentVersionId() == null && !hasHistory);
-		actions.setPublishable(true);
+		actions.setPublishable(PublishMode.MANUAL.getValue() == prompt.getPublishMode());
 		actions.setDisableable(prompt.getCurrentVersionId() != null && prompt.getStatus() != PromptStatus.DISABLED.getValue());
 		actions.setRollbackable(hasHistory);
 		return actions;
+	}
+
+	private void applyClassification(Prompt prompt, PromptListVO vo) {
+		PromptType type = PromptType.of(prompt.getPromptType());
+		vo.setPromptType(prompt.getPromptType());
+		vo.setPromptTypeName(type == null ? null : type.getLabel());
+		PublishMode mode = PublishMode.of(prompt.getPublishMode());
+		vo.setPublishMode(prompt.getPublishMode());
+		vo.setPublishModeName(mode == null ? null : mode.getLabel());
 	}
 }

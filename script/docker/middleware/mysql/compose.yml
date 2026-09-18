@@ -1,0 +1,30 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      BLADE_MYSQL_PASSWORD: ${BLADE_MYSQL_PASSWORD}
+      NACOS_MYSQL_PASSWORD: ${NACOS_MYSQL_PASSWORD}
+    ports:
+      - ${MYSQL_BIND_ADDRESS:-127.0.0.1}:${MYSQL_PORT:-3306}:3306
+    volumes:
+      - ./data:/var/lib/mysql
+      - ./conf/my.cnf:/etc/mysql/conf.d/springblade.cnf:ro
+      - ./init/init-databases.sh:/docker-entrypoint-initdb.d/10-init-databases.sh:ro
+      - ./init/nacos.mysql-schema.sql:/opt/springblade/bootstrap/nacos.mysql-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      springblade-backend:
+        aliases:
+          - springblade-mysql
+
+networks:
+  springblade-backend:
+    external: true

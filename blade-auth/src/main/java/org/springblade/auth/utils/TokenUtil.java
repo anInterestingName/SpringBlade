@@ -79,7 +79,7 @@ public class TokenUtil {
 		authInfo.setTenantId(user.getTenantId());
 		authInfo.setOauthId(userInfo.getOauthId());
 		authInfo.setAccount(user.getAccount());
-		authInfo.setUserName(user.getRealName());
+		authInfo.setUserName(Func.toStr(user.getRealName(), user.getName()));
 		authInfo.setAuthority(Func.join(userInfo.getRoles()));
 		authInfo.setAccessToken(accessToken.getToken());
 		authInfo.setExpiresIn(accessToken.getExpire());

@@ -1,0 +1,22 @@
+name: springblade-ingress
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - ${HTTP_BIND_ADDRESS:-0.0.0.0}:${HTTP_PORT:-80}:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - springblade-platform
+
+networks:
+  springblade-platform:
+    external: true
+    name: springblade-platform
