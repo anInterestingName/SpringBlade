@@ -3,10 +3,10 @@ spring:
   data:
     redis:
       ##redis 单机环境配置
-      host: 10.211.55.5
-      port: 3379
-      password:
-      database: 0
+      host: ${BLADE_REDIS_HOST}
+      port: ${BLADE_REDIS_PORT:6379}
+      password: ${BLADE_REDIS_PASSWORD}
+      database: ${BLADE_REDIS_DATABASE:0}
       ssl:
         enabled: false
       ##redis 集群环境配置
@@ -19,6 +19,6 @@ blade:
   #通用开发生产环境数据库地址(特殊情况可在对应的子工程里配置覆盖)
   datasource:
     prod:
-      url: jdbc:mysql://10.211.55.5:3306/blade?useSSL=false&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&tinyInt1isBit=false&allowMultiQueries=true&serverTimezone=GMT%2B8
-      username: root
-      password: root
+      url: ${BLADE_DATASOURCE_URL}
+      username: ${BLADE_DATASOURCE_USERNAME}
+      password: ${BLADE_DATASOURCE_PASSWORD}

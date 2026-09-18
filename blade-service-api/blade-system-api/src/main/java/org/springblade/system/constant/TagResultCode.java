@@ -36,7 +36,8 @@ public enum TagResultCode implements IResultCode {
 	TAG_HAS_CHILDREN(48111, "标签下仍存在子标签"),
 	TAG_CONFLICT(48112, "数据已被其他操作修改，请刷新后重试"),
 	TAG_STATUS_INVALID(48113, "标签状态不合法"),
-	TAG_CODE_INVALID(48114, "标签编码格式不合法");
+	TAG_CODE_INVALID(48114, "标签编码格式不合法"),
+	TAG_RUNTIME_UNAVAILABLE(48115, "标签运行时服务暂不可用");
 
 	private final int code;
 	private final String message;

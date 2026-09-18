@@ -45,7 +45,9 @@ public enum PromptResultCode implements IResultCode {
 	PROMPT_PUBLISH_MODE_INVALID(48013, "提示词发布方式无效"),
 	PROMPT_PUBLISH_MODE_CONFLICT(48014, "当前发布方式不允许执行该操作"),
 	PROMPT_AUTO_PUBLISH_NOTE_REQUIRED(48015, "自动发布必须填写变更说明"),
-	PROMPT_DATA_SCOPE_UNAVAILABLE(48016, "提示词数据权限未配置或暂不可用");
+	PROMPT_DATA_SCOPE_UNAVAILABLE(48016, "提示词数据权限未配置或暂不可用"),
+	PROMPT_SYSTEM_POLICY_FORBIDDEN(48017, "无权维护系统提示词策略"),
+	PROMPT_SYSTEM_POLICY_INVALID(48018, "系统提示词策略配置不合法");
 
 	private final int code;
 	private final String message;

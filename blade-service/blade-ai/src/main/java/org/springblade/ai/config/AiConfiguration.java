@@ -24,6 +24,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @EnableFeignClients("org.springblade")
 @MapperScan("org.springblade.ai.prompt.mapper")
-@EnableConfigurationProperties(PromptProperties.class)
+@EnableConfigurationProperties({PromptProperties.class, PromptReverseProperties.class})
 public class AiConfiguration {
 }

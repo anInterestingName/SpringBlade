@@ -1,17 +1,15 @@
-# 网络问题无法下载可以改为阿里云镜像
-# FROM registry.cn-hangzhou.aliyuncs.com/bladex-repo/alpine-java:openjdk21_cn_slim
 FROM bladex/alpine-java:openjdk21_cn_slim
 
-MAINTAINER bladejava@qq.com
+LABEL org.opencontainers.image.authors="bladejava@qq.com"
 
-RUN mkdir -p /blade/auth
+RUN mkdir -p /blade/auth && chown -R 10001:10001 /blade/auth
 
 WORKDIR /blade/auth
 
-EXPOSE 8010
+EXPOSE 8100
 
-ADD ./target/blade-auth.jar ./app.jar
+COPY --chown=10001:10001 ./target/blade-auth.jar ./app.jar
 
-ENTRYPOINT ["java", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+USER 10001:10001
 
-CMD ["--spring.profiles.active=test"]
+ENTRYPOINT ["java", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/blade/auth/app.jar"]

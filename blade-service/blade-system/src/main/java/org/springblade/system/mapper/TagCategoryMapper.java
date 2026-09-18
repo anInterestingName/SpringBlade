@@ -19,6 +19,7 @@ public interface TagCategoryMapper extends BaseMapper<TagCategory> {
 	TagCategory selectTenantCategory(@Param("tenantId") String tenantId, @Param("id") Long id);
 	TagCategory selectByCodeIncludingDeleted(@Param("tenantId") String tenantId, @Param("code") String code);
 	TagCategory selectForUpdate(@Param("tenantId") String tenantId, @Param("id") Long id);
+	List<TagCategory> selectEffectiveCategories(@Param("tenantId") String tenantId);
 	long countTags(@Param("tenantId") String tenantId, @Param("categoryId") Long categoryId);
 	int updateCategory(@Param("category") TagCategory category, @Param("tenantId") String tenantId,
 		@Param("expectedLockVersion") Long expectedLockVersion, @Param("updateUser") Long updateUser);

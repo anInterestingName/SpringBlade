@@ -22,6 +22,7 @@ import org.springblade.system.enums.TagSelectionMode;
 import org.springblade.system.enums.TagStatus;
 import org.springblade.system.mapper.TagCategoryMapper;
 import org.springblade.system.service.ITagCategoryService;
+import org.springblade.system.tag.support.TagTaxonomyCacheInvalidator;
 import org.springblade.system.vo.TagCategoryDetailVO;
 import org.springblade.system.vo.TagCategoryListVO;
 import org.springblade.system.vo.TagCategoryMutationVO;
@@ -42,6 +43,7 @@ public class TagCategoryServiceImpl extends BaseServiceImpl<TagCategoryMapper, T
 
 	private static final Pattern CODE_PATTERN = Pattern.compile("^[a-z][a-z0-9_]{0,63}$");
 	private final TagCategoryWrapper categoryWrapper;
+	private final TagTaxonomyCacheInvalidator taxonomyCacheInvalidator;
 
 	@Override
 	public IPage<TagCategoryListVO> selectPage(String name, String code, Integer status, Query query) {
@@ -84,6 +86,7 @@ public class TagCategoryServiceImpl extends BaseServiceImpl<TagCategoryMapper, T
 		} catch (DuplicateKeyException exception) {
 			throw new ServiceException(TagResultCode.TAG_CATEGORY_CODE_DUPLICATE, exception);
 		}
+		taxonomyCacheInvalidator.invalidateAfterCommit(tenantId);
 		return mutation(category.getId(), category.getStatus(), category.getLockVersion());
 	}
 
@@ -109,6 +112,7 @@ public class TagCategoryServiceImpl extends BaseServiceImpl<TagCategoryMapper, T
 		if (baseMapper.updateCategory(update, tenantId, dto.getLockVersion(), currentUserId()) != 1) {
 			throw new ServiceException(TagResultCode.TAG_CONFLICT);
 		}
+		taxonomyCacheInvalidator.invalidateAfterCommit(tenantId);
 		return mutation(existing.getId(), existing.getStatus(), existing.getLockVersion() + 1);
 	}
 
@@ -125,6 +129,7 @@ public class TagCategoryServiceImpl extends BaseServiceImpl<TagCategoryMapper, T
 			|| baseMapper.updateStatus(tenantId, dto.getId(), dto.getLockVersion(), target.getValue(), currentUserId()) != 1) {
 			throw new ServiceException(TagResultCode.TAG_CONFLICT);
 		}
+		taxonomyCacheInvalidator.invalidateAfterCommit(tenantId);
 		return mutation(existing.getId(), target.getValue(), existing.getLockVersion() + 1);
 	}
 
@@ -142,6 +147,7 @@ public class TagCategoryServiceImpl extends BaseServiceImpl<TagCategoryMapper, T
 		if (baseMapper.logicalDelete(tenantId, dto.getId(), dto.getLockVersion(), currentUserId()) != 1) {
 			throw new ServiceException(TagResultCode.TAG_CONFLICT);
 		}
+		taxonomyCacheInvalidator.invalidateAfterCommit(tenantId);
 		return true;
 	}
 

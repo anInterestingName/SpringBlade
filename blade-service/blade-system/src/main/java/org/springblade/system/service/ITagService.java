@@ -16,6 +16,7 @@ import org.springblade.system.vo.TagDetailVO;
 import org.springblade.system.vo.TagListVO;
 import org.springblade.system.vo.TagMutationVO;
 import org.springblade.system.vo.TagOptionVO;
+import org.springblade.system.vo.TagTaxonomyVO;
 import org.springblade.system.vo.TagTreeVO;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public interface ITagService extends BaseService<TagDefinition> {
 	TagDetailVO detail(Long id);
 	List<TagTreeVO> tree(Long categoryId);
 	List<TagOptionVO> options(Long categoryId);
+	TagTaxonomyVO effectiveTaxonomy();
 	TagMutationVO create(TagCreateDTO dto);
 	TagMutationVO update(TagUpdateDTO dto);
 	TagMutationVO changeStatus(TagStatusDTO dto);

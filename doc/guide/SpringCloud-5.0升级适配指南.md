@@ -293,9 +293,11 @@ Sleuth/Zipkin 链路模型自 Boot 3 起已被 Micrometer Tracing 取代,`spring
 
 ### 5.5 Nacos 3.2.2 镜像与配置适配(`script/docker/nacos/`)
 
+> 2026-09-17 起，Docker 部署按 `script/docker/middleware`、`script/docker/app` 和 `script/docker/ingress` 分层。本节保留 Nacos 升级背景，实际部署以 [Docker Compose 与 GitHub Actions 部署教程](docker-compose-github-actions-deployment.md) 为准。
+
 nacos-client 由 blade-tool §11.1 **主动**锁定为 3.2.2(⚠️ 注:Spring Cloud Alibaba 2025.1.0.0 的 BOM 本身托管的是 nacos-client **3.1.1**,3.2.2 是通过 `alibaba.nacos.version` 显式覆盖的,并非 Cloud 2025.1 自带),服务端镜像同步 `v3.1.0 → v3.2.2`(§8 已列)。但**升级远不止改一个 tag**:Nacos 3.2.x 引入了 AI 控制面(MCP / Skill / AgentSpec),会显著改变开箱行为,需配套处理以下几处。
 
-#### ① 镜像 tag(`script/docker/docker-compose.yml`)
+#### ① 镜像 tag(`script/docker/middleware/nacos/compose.yml`)
 
 ```yaml
 # 改前
@@ -343,30 +345,9 @@ openssl rand -base64 32   # 生成合规密钥
 
 #### ⑤ 数据持久化(推荐)
 
-单机 Derby 数据默认在容器内,重建即丢。compose 新增数据卷,`deploy.sh` 的 `mount()` 同步创建该目录:
+当前 `script/docker/middleware` 已将 MySQL、Redis、Nacos、Sentinel 拆为四个独立 Compose project，使用 `nacos_config` MySQL Schema 和宿主机绑定目录持久化。应用发布不会重建这些中间件容器或目录。
 
-```yaml
-# docker-compose.yml nacos.volumes 新增
-- /docker/nacos/data:/home/nacos/data
-```
-
-```bash
-# deploy.sh mount() 新增
-if test ! -d "/docker/nacos/data" ;then
-    mkdir -p /docker/nacos/data
-fi
-```
-
-> 空的 data 目录挂载还会**遮蔽镜像自带的 AI zip**,等于给「不加载数千条」上了第二道保险。首次启用持久化前须确保 data 目录为空,避免把旧脏数据带入。
-
-#### ⚠️ 部署注意(老环境更新)
-
-`deploy.sh mount()` 对宿主机文件是「不存在才拷贝」(`if test ! -f`)。**已部署过的机器上 `/docker/nacos/conf/application.properties` 已存在,`deploy.sh mount` 不会用新模板覆盖它**。更新 nacos 配置须手动覆盖后重建容器:
-
-```bash
-cp nacos/conf/application.properties /docker/nacos/conf/application.properties
-docker-compose rm -sf nacos && docker-compose up -d nacos
-```
+旧环境从 Derby 或宿主机目录迁移时，必须先备份并按 Nacos 官方迁移方式转换数据，不得直接删除旧目录或执行 `docker compose down -v`。完整首次部署、备份和已有环境迁移步骤见新的部署教程。
 
 ### 5.6 Feign 接口统一 `/feign/client` 前缀 + 网关内部接口隔离
 
@@ -471,11 +452,11 @@ cd SpringBlade && mvn clean install -DskipTests -Dmaven.test.skip=true -Ddocker.
 | 部署 | 9 个 `Dockerfile` 基础镜像(blade-auth、blade-gateway、blade-ops×4、blade-service×3) | `bladex/alpine-java:openjdk17_cn_slim` → `openjdk21_cn_slim`(与 JDK 21 对齐;blade-auth 另含注释的阿里云备用镜像行 `openjdk17_cn_slim` 同步改 21) |
 | 文档 | CLAUDE.md 开发规范 | 同步刷新:文档栈 Knife4j→springdoc、Controller 约定去 @ApiOperationSupport、去 OkHttp 提法、JDK/Java 17→21 |
 | 插件 | 根 pom maven-compiler / flatten | 3.11.0→3.15.0 / 1.3.0→1.7.3 |
-| 部署 | `script/docker/docker-compose.yml` nacos-server 镜像 | `v3.1.0` → `v3.2.2`(与 nacos-client 3.2.2 对齐,详见 §5.5) |
+| 部署 | `script/docker/middleware/nacos/compose.yml` nacos-server 镜像 | `v3.1.0` → `v3.2.2`(与 nacos-client 3.2.2 对齐,详见 §5.5) |
 | 配置 | `script/docker/nacos/conf/application.properties` | 2.x 精简模板 → 3.2.2 官方默认 + AI 关闭配置(§5.5②③) |
 | 配置 | 同上 AI 开关 | 新增 `nacos.plugin.ai-pipeline.enabled` / `skill-scanner.enabled` / `nacos.extension.ai.enabled` = false,消除数千条内置 AI 配置(§5.5③) |
-| 部署 | `script/docker/docker-compose.yml` nacos.volumes | 新增 `/docker/nacos/data` 持久化 + `application.properties` 挂载改 `:ro`(§5.5⑤) |
-| 部署 | `script/docker/deploy.sh` `mount()` | 新增创建 `/docker/nacos/data` 目录(§5.5⑤) |
+| 部署 | `script/docker/middleware/*/compose.yml` 持久化 | MySQL、Redis、Nacos数据与日志使用各自宿主机绑定目录，配置只读挂载(§5.5⑤) |
+| 部署 | `script/docker/deploy.sh` | 改为 `infra`、`app`、`ingress` 独立 project 调度入口 |
 | 业务 | 全部 Feign 接口 `IXxxClient`(7 个,`IApiScopeClient` 已合规免改)+ seata `StorageController` | `API_PREFIX` 统一为 `/feign/client/<模块>`,Provider 映射随常量同步(§5.6①) |
 | 新增 | blade-gateway `provider/RequestProvider.java` + `filter/InnerFilter.java` | 网关对外拦截含 `feign` 保留段的请求、返回 403;判定只认首段 `feign`,采用「解码 + 逐段精确比对」对齐容器归一化,杜绝 `//`、`/./`、`;params`、`%编码` 变形绕过(§5.6②) |
 

@@ -22,6 +22,7 @@ public interface TagMapper extends BaseMapper<TagDefinition> {
 		@Param("categoryId") Long categoryId, @Param("code") String code);
 	TagDefinition selectForUpdate(@Param("tenantId") String tenantId, @Param("id") Long id);
 	List<TagDefinition> selectByCategory(@Param("tenantId") String tenantId, @Param("categoryId") Long categoryId);
+	List<TagDefinition> selectEffectiveTags(@Param("tenantId") String tenantId);
 	long countChildren(@Param("tenantId") String tenantId, @Param("categoryId") Long categoryId,
 		@Param("parentId") Long parentId);
 	int updateTag(@Param("tag") TagDefinition tag, @Param("tenantId") String tenantId,

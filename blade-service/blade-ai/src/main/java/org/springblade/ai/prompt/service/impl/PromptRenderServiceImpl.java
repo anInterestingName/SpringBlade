@@ -83,6 +83,7 @@ public class PromptRenderServiceImpl implements IPromptRenderService {
 		}
 		PromptRenderVO rendered = renderer.render(version.getPromptCode(), version.getPromptType(), version.getId(), version.getVersionNo(),
 			version.getFixedInstruction(), version.getUserTemplate(), validation);
+		rendered.setContentHash(version.getContentHash());
 		if (!Boolean.TRUE.equals(rendered.getValid())) {
 			var issue = rendered.getErrors().getFirst();
 			throw new ServiceException(PromptResultCode.PROMPT_VARIABLE_INVALID.detail(issue.getMessage()));

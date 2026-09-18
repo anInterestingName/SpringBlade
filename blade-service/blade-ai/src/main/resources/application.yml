@@ -14,3 +14,16 @@ blade:
       max-user-template-length: 32768
       max-variable-count: 100
       max-rendered-length: 65535
+    reverse:
+      fast-base-url: ${BLADE_AI_REVERSE_FAST_BASE_URL:}
+      fast-api-key: ${BLADE_AI_REVERSE_FAST_API_KEY:}
+      connect-timeout: 5s
+      read-timeout: 90s
+      max-pixels: 40000000
+      max-response-bytes: 1048576
+      taxonomy-snapshot-ttl: 24h
+      taxonomy-lock-ttl: 10s
+      taxonomy-lock-wait: 2s
+      taxonomy-poll-interval: 100ms
+      output-language: en
+      target-engine: ${BLADE_AI_REVERSE_TARGET_ENGINE:}

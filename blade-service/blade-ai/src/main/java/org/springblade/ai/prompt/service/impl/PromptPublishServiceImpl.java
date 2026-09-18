@@ -34,6 +34,7 @@ import org.springblade.ai.prompt.mapper.PromptVersionMapper;
 import org.springblade.ai.prompt.service.IPromptPublishService;
 import org.springblade.ai.prompt.service.IPromptService;
 import org.springblade.ai.prompt.service.PromptAccessService;
+import org.springblade.ai.prompt.service.PromptSystemPolicyGuard;
 import org.springblade.ai.prompt.service.PromptVersionFactory;
 import org.springblade.ai.prompt.vo.PromptMutationVO;
 import org.springblade.core.log.exception.ServiceException;
@@ -59,6 +60,7 @@ public class PromptPublishServiceImpl implements IPromptPublishService {
 	private final PromptSchemaCodec schemaCodec;
 	private final PromptContentValidator validator;
 	private final PromptAccessService accessService;
+	private final PromptSystemPolicyGuard systemPolicyGuard;
 	private final PromptVersionFactory versionFactory;
 
 	@Override
@@ -67,6 +69,7 @@ public class PromptPublishServiceImpl implements IPromptPublishService {
 		String tenantId = promptService.currentTenantId();
 		Prompt accessible = promptService.getTenantPrompt(dto.getId());
 		Prompt prompt = lockedPrompt(tenantId, accessible, dto.getLockVersion());
+		systemPolicyGuard.requireManage(prompt);
 		if (!Objects.equals(prompt.getPublishMode(), PublishMode.MANUAL.getValue())) {
 			throw new ServiceException(PromptResultCode.PROMPT_PUBLISH_MODE_CONFLICT);
 		}
@@ -92,6 +95,7 @@ public class PromptPublishServiceImpl implements IPromptPublishService {
 		String tenantId = promptService.currentTenantId();
 		Prompt accessible = promptService.getTenantPrompt(dto.getId());
 		Prompt prompt = lockedPrompt(tenantId, accessible, dto.getLockVersion());
+		systemPolicyGuard.requireManage(prompt);
 		if (prompt.getCurrentVersionId() == null) {
 			throw new ServiceException(PromptResultCode.PROMPT_NOT_PUBLISHED);
 		}
@@ -116,6 +120,7 @@ public class PromptPublishServiceImpl implements IPromptPublishService {
 		String tenantId = promptService.currentTenantId();
 		Prompt accessible = promptService.getTenantPrompt(dto.getId());
 		Prompt prompt = lockedPrompt(tenantId, accessible, dto.getLockVersion());
+		systemPolicyGuard.requireManage(prompt);
 		PromptVersion target = versionMapper.selectTenantVersion(tenantId, prompt.getId(), dto.getTargetVersionId());
 		if (target == null) {
 			throw new ServiceException(PromptResultCode.PROMPT_ROLLBACK_TARGET_INVALID);

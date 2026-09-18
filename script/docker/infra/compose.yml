@@ -1,0 +1,103 @@
+name: springblade-infra
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      BLADE_MYSQL_PASSWORD: ${BLADE_MYSQL_PASSWORD}
+      NACOS_MYSQL_PASSWORD: ${NACOS_MYSQL_PASSWORD}
+    ports:
+      - ${MYSQL_BIND_ADDRESS:-127.0.0.1}:${MYSQL_PORT:-3306}:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/init-databases.sh:/docker-entrypoint-initdb.d/10-init-databases.sh:ro
+      - ./mysql/nacos.mysql-schema.sql:/opt/springblade/bootstrap/nacos.mysql-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      - springblade-platform
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - ${REDIS_BIND_ADDRESS:-127.0.0.1}:${REDIS_PORT:-6379}:6379
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - springblade-platform
+
+  nacos:
+    image: nacos/nacos-server:v3.2.2
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MODE: standalone
+      TZ: ${TZ:-Asia/Shanghai}
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_DATABASE_NUM: 1
+      MYSQL_SERVICE_HOST: mysql
+      MYSQL_SERVICE_PORT: 3306
+      MYSQL_SERVICE_DB_NAME: nacos_config
+      MYSQL_SERVICE_USER: nacos
+      MYSQL_SERVICE_PASSWORD: ${NACOS_MYSQL_PASSWORD}
+      NACOS_AUTH_ENABLE: "true"
+      NACOS_AUTH_CACHE_ENABLE: "true"
+      NACOS_AUTH_IDENTITY_KEY: ${NACOS_AUTH_IDENTITY_KEY}
+      NACOS_AUTH_IDENTITY_VALUE: ${NACOS_AUTH_IDENTITY_VALUE}
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN}
+      NACOS_AI_PIPELINE_ENABLED: "false"
+      NACOS_AI_PIPELINE_SKILL_SCANNER_ENABLED: "false"
+      NACOS_EXTENSION_AI_ENABLED: "false"
+    ports:
+      - ${NACOS_BIND_ADDRESS:-127.0.0.1}:${NACOS_SERVER_PORT:-8848}:8848
+      - ${NACOS_BIND_ADDRESS:-127.0.0.1}:${NACOS_GRPC_PORT:-9848}:9848
+      - ${NACOS_BIND_ADDRESS:-127.0.0.1}:${NACOS_CONSOLE_PORT:-8080}:8080
+    volumes:
+      - nacos-data:/home/nacos/data
+      - nacos-logs:/home/nacos/logs
+      - ../nacos/conf/application.properties:/home/nacos/conf/application.properties:ro
+    networks:
+      - springblade-platform
+
+  sentinel:
+    image: bladex/sentinel-dashboard:1.8.0
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - ${SENTINEL_BIND_ADDRESS:-127.0.0.1}:${SENTINEL_PORT:-8858}:8858
+    networks:
+      - springblade-platform
+
+volumes:
+  mysql-data:
+  redis-data:
+  nacos-data:
+  nacos-logs:
+
+networks:
+  springblade-platform:
+    external: true
+    name: springblade-platform

@@ -1,15 +1,15 @@
 FROM bladex/alpine-java:openjdk21_cn_slim
 
-MAINTAINER bladejava@qq.com
+LABEL org.opencontainers.image.authors="bladejava@qq.com"
 
-RUN mkdir -p /blade/resource
+RUN mkdir -p /blade/resource && chown -R 10001:10001 /blade/resource
 
 WORKDIR /blade/resource
 
 EXPOSE 8010
 
-ADD ./target/blade-resource.jar ./app.jar
+COPY --chown=10001:10001 ./target/blade-resource.jar ./app.jar
 
-ENTRYPOINT ["java", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+USER 10001:10001
 
-CMD ["--spring.profiles.active=test"]
+ENTRYPOINT ["java", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/blade/resource/app.jar"]

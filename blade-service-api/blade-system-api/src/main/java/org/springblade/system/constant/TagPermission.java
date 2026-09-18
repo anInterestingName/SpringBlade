@@ -27,4 +27,5 @@ public interface TagPermission {
 	String TAG_EDIT = "system:tag:edit";
 	String TAG_STATUS = "system:tag:status";
 	String TAG_DELETE = "system:tag:delete";
+	String RUNTIME = "system:tag:runtime";
 }

@@ -52,6 +52,15 @@ public class PromptAccessService {
 		requireScope(RESOURCE_MAPPER_ID);
 	}
 
+	public boolean hasAllManagementScopes() {
+		try {
+			return resolveScope(PAGE_MAPPER_ID) == DataScopeEnum.ALL
+				&& resolveScope(RESOURCE_MAPPER_ID) == DataScopeEnum.ALL;
+		} catch (RuntimeException exception) {
+			return false;
+		}
+	}
+
 	public Prompt requireAccessible(String tenantId, Long id) {
 		Long ownerUserId = requireScope(RESOURCE_MAPPER_ID);
 		Prompt prompt = promptMapper.selectScopePrompt(tenantId, id, ownerUserId);
@@ -71,6 +80,15 @@ public class PromptAccessService {
 	}
 
 	private Long requireScope(String mapperId) {
+		DataScopeEnum scope = resolveScope(mapperId);
+		BladeUser user = SecureUtil.getUser();
+		if (scope == DataScopeEnum.OWN && (user == null || user.getUserId() == null)) {
+			throw new ServiceException(PromptResultCode.PROMPT_DATA_SCOPE_UNAVAILABLE);
+		}
+		return scope == DataScopeEnum.OWN ? user.getUserId() : null;
+	}
+
+	private DataScopeEnum resolveScope(String mapperId) {
 		BladeUser user = SecureUtil.getUser();
 		if (user == null || user.getRoleId() == null || user.getRoleId().isBlank()) {
 			throw new ServiceException(PromptResultCode.PROMPT_DATA_SCOPE_UNAVAILABLE);
@@ -81,10 +99,7 @@ public class PromptAccessService {
 			if (scope != DataScopeEnum.ALL && scope != DataScopeEnum.OWN) {
 				throw new ServiceException(PromptResultCode.PROMPT_DATA_SCOPE_UNAVAILABLE);
 			}
-			if (scope == DataScopeEnum.OWN && user.getUserId() == null) {
-				throw new ServiceException(PromptResultCode.PROMPT_DATA_SCOPE_UNAVAILABLE);
-			}
-			return scope == DataScopeEnum.OWN ? user.getUserId() : null;
+			return scope;
 		} catch (ServiceException exception) {
 			throw exception;
 		} catch (RuntimeException exception) {

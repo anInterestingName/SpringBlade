@@ -38,6 +38,12 @@
         FOR UPDATE
     </select>
 
+    <select id="selectEffectiveCategories" resultType="org.springblade.system.entity.TagCategory">
+        SELECT * FROM blade_tag_category
+        WHERE tenant_id = #{tenantId} AND status = 1 AND is_deleted = 0
+        ORDER BY sort ASC, category_code ASC, id ASC
+    </select>
+
     <select id="countTags" resultType="long">
         SELECT COUNT(1) FROM blade_tag
         WHERE tenant_id = #{tenantId} AND category_id = #{categoryId} AND is_deleted = 0

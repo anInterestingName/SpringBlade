@@ -32,5 +32,7 @@ public interface PromptPermission {
 	String DISABLE = "ai:prompt:disable";
 	String ROLLBACK = "ai:prompt:rollback";
 	String RUNTIME = "ai:prompt:runtime";
+	String REVERSE = "ai:prompt:reverse";
+	String SYSTEM_MANAGE = "ai:prompt:system-manage";
 
 }

@@ -38,6 +38,7 @@ import org.springblade.ai.prompt.mapper.PromptMapper;
 import org.springblade.ai.prompt.mapper.PromptVersionMapper;
 import org.springblade.ai.prompt.service.IPromptService;
 import org.springblade.ai.prompt.service.PromptAccessService;
+import org.springblade.ai.prompt.service.PromptSystemPolicyGuard;
 import org.springblade.ai.prompt.service.PromptVersionFactory;
 import org.springblade.ai.prompt.vo.PromptDetailVO;
 import org.springblade.ai.prompt.vo.PromptListVO;
@@ -75,6 +76,7 @@ public class PromptServiceImpl extends BaseServiceImpl<PromptMapper, Prompt> imp
 	private final PromptWrapper promptWrapper;
 	private final PromptVersionWrapper versionWrapper;
 	private final PromptAccessService accessService;
+	private final PromptSystemPolicyGuard systemPolicyGuard;
 	private final PromptVersionFactory versionFactory;
 	private final IPermissionHandler permissionHandler;
 
@@ -116,6 +118,7 @@ public class PromptServiceImpl extends BaseServiceImpl<PromptMapper, Prompt> imp
 		String code = normalizeCode(dto.getPromptCode());
 		PromptType type = requirePromptType(dto.getPromptType());
 		PublishMode mode = requirePublishMode(dto.getPublishMode());
+		systemPolicyGuard.requireCreate(code, type, mode);
 		PromptValidationResult validation = mode == PublishMode.AUTO
 			? validatePublish(dto.getFixedInstruction(), dto.getUserTemplate(), dto.getVariables())
 			: validateDraft(dto.getFixedInstruction(), dto.getUserTemplate(), dto.getVariables());
@@ -176,6 +179,7 @@ public class PromptServiceImpl extends BaseServiceImpl<PromptMapper, Prompt> imp
 		validateUpdateIdentity(existing, dto.getPromptCode(), dto.getLockVersion());
 		PromptType type = requirePromptType(dto.getPromptType());
 		PublishMode mode = requirePublishMode(dto.getPublishMode());
+		systemPolicyGuard.requireUpdate(existing, type, mode);
 		return mode == PublishMode.AUTO
 			? autoPublishUpdate(dto, tenantId, existing, type)
 			: manualUpdate(dto, tenantId, existing, type);
@@ -201,6 +205,7 @@ public class PromptServiceImpl extends BaseServiceImpl<PromptMapper, Prompt> imp
 	public boolean remove(PromptDeleteDTO dto) {
 		String tenantId = currentTenantId();
 		Prompt prompt = getTenantPrompt(dto.getId());
+		systemPolicyGuard.requireManage(prompt);
 		if (!Objects.equals(prompt.getLockVersion(), dto.getLockVersion())) {
 			throw new ServiceException(PromptResultCode.PROMPT_CONFLICT);
 		}

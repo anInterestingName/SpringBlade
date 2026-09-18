@@ -38,6 +38,16 @@
         ORDER BY sort ASC, create_time ASC, id ASC
     </select>
 
+    <select id="selectEffectiveTags" resultType="org.springblade.system.entity.TagDefinition">
+        SELECT t.*
+        FROM blade_tag t
+        INNER JOIN blade_tag_category c
+          ON c.tenant_id = t.tenant_id AND c.id = t.category_id
+         AND c.status = 1 AND c.is_deleted = 0
+        WHERE t.tenant_id = #{tenantId} AND t.status = 1 AND t.is_deleted = 0
+        ORDER BY c.sort ASC, c.category_code ASC, t.sort ASC, t.tag_code ASC, t.id ASC
+    </select>
+
     <select id="countChildren" resultType="long">
         SELECT COUNT(1) FROM blade_tag
         WHERE tenant_id = #{tenantId} AND category_id = #{categoryId}

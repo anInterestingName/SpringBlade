@@ -24,11 +24,15 @@ import org.springblade.system.mapper.TagCategoryMapper;
 import org.springblade.system.mapper.TagMapper;
 import org.springblade.system.service.ITagService;
 import org.springblade.system.tag.support.TagOptionEvaluator;
+import org.springblade.system.tag.support.TagTaxonomyCacheInvalidator;
 import org.springblade.system.tag.support.TagTreeValidator;
 import org.springblade.system.vo.TagDetailVO;
 import org.springblade.system.vo.TagListVO;
 import org.springblade.system.vo.TagMutationVO;
 import org.springblade.system.vo.TagOptionVO;
+import org.springblade.system.vo.TagTaxonomyCategoryVO;
+import org.springblade.system.vo.TagTaxonomyItemVO;
+import org.springblade.system.vo.TagTaxonomyVO;
 import org.springblade.system.vo.TagTreeVO;
 import org.springblade.system.wrapper.TagWrapper;
 import org.springframework.dao.DuplicateKeyException;
@@ -38,10 +42,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /** 标签服务实现。 @author BladeX */
@@ -54,6 +60,7 @@ public class TagServiceImpl extends BaseServiceImpl<TagMapper, TagDefinition> im
 	private final TagTreeValidator treeValidator;
 	private final TagOptionEvaluator optionEvaluator;
 	private final TagWrapper tagWrapper;
+	private final TagTaxonomyCacheInvalidator taxonomyCacheInvalidator;
 
 	@Override
 	public IPage<TagListVO> selectPage(Long categoryId, Long parentId, String name, String code,
@@ -98,6 +105,36 @@ public class TagServiceImpl extends BaseServiceImpl<TagMapper, TagDefinition> im
 	}
 
 	@Override
+	public TagTaxonomyVO effectiveTaxonomy() {
+		String tenantId = currentTenantId();
+		List<TagCategory> categories = categoryMapper.selectEffectiveCategories(tenantId);
+		Map<Long, List<TagDefinition>> groupedTags = new HashMap<>();
+		baseMapper.selectEffectiveTags(tenantId)
+			.forEach(tag -> groupedTags.computeIfAbsent(tag.getCategoryId(), key -> new ArrayList<>()).add(tag));
+
+		TagTaxonomyVO taxonomy = new TagTaxonomyVO();
+		for (TagCategory category : categories) {
+			List<TagDefinition> tags = groupedTags.getOrDefault(category.getId(), List.of());
+			Map<Long, TagDefinition> tagMap = toMap(tags);
+			Map<Long, List<String>> pathCache = new HashMap<>();
+			TagTaxonomyCategoryVO categoryVO = new TagTaxonomyCategoryVO();
+			categoryVO.setCategoryCode(category.getCategoryCode());
+			categoryVO.setCategoryName(category.getCategoryName());
+			categoryVO.setSelectionMode(category.getSelectionMode());
+			categoryVO.setMaxSelectCount(category.getMaxSelectCount());
+			categoryVO.setSort(category.getSort());
+			for (TagDefinition tag : tags) {
+				TagTaxonomyItemVO item = taxonomyItem(tag, tagMap, pathCache);
+				if (item != null) {
+					categoryVO.getTags().add(item);
+				}
+			}
+			taxonomy.getCategories().add(categoryVO);
+		}
+		return taxonomy;
+	}
+
+	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public TagMutationVO create(TagCreateDTO dto) {
 		String tenantId = currentTenantId();
@@ -127,6 +164,7 @@ public class TagServiceImpl extends BaseServiceImpl<TagMapper, TagDefinition> im
 		} catch (DuplicateKeyException exception) {
 			throw new ServiceException(TagResultCode.TAG_CODE_DUPLICATE, exception);
 		}
+		taxonomyCacheInvalidator.invalidateAfterCommit(tenantId);
 		return mutation(tag.getId(), tag.getStatus(), tag.getLockVersion());
 	}
 
@@ -165,6 +203,7 @@ public class TagServiceImpl extends BaseServiceImpl<TagMapper, TagDefinition> im
 		if (structureChanged) {
 			updateDescendantPaths(tenantId, current, placement, tags, updateUser);
 		}
+		taxonomyCacheInvalidator.invalidateAfterCommit(tenantId);
 		return mutation(current.getId(), current.getStatus(), current.getLockVersion() + 1);
 	}
 
@@ -184,6 +223,7 @@ public class TagServiceImpl extends BaseServiceImpl<TagMapper, TagDefinition> im
 			target.getValue(), currentUserId()) != 1) {
 			throw new ServiceException(TagResultCode.TAG_CONFLICT);
 		}
+		taxonomyCacheInvalidator.invalidateAfterCommit(tenantId);
 		return mutation(current.getId(), target.getValue(), current.getLockVersion() + 1);
 	}
 
@@ -204,7 +244,58 @@ public class TagServiceImpl extends BaseServiceImpl<TagMapper, TagDefinition> im
 			dto.getLockVersion(), currentUserId()) != 1) {
 			throw new ServiceException(TagResultCode.TAG_CONFLICT);
 		}
+		taxonomyCacheInvalidator.invalidateAfterCommit(tenantId);
 		return true;
+	}
+
+	private TagTaxonomyItemVO taxonomyItem(TagDefinition tag, Map<Long, TagDefinition> tagMap,
+		Map<Long, List<String>> pathCache) {
+		List<String> path = resolvePath(tag, tagMap, pathCache, new HashSet<>());
+		if (path == null) {
+			return null;
+		}
+		TagTaxonomyItemVO item = new TagTaxonomyItemVO();
+		item.setTagCode(tag.getTagCode());
+		item.setTagName(tag.getTagName());
+		item.setDescription(tag.getRemark());
+		TagDefinition parent = tagMap.get(tag.getParentId());
+		item.setParentCode(parent == null ? null : parent.getTagCode());
+		item.setPath(path);
+		item.setDepth(tag.getDepth());
+		item.setSort(tag.getSort());
+		return item;
+	}
+
+	private List<String> resolvePath(TagDefinition tag, Map<Long, TagDefinition> tagMap,
+		Map<Long, List<String>> pathCache, Set<Long> visiting) {
+		List<String> cached = pathCache.get(tag.getId());
+		if (cached != null) {
+			return cached;
+		}
+		if (!visiting.add(tag.getId())) {
+			return null;
+		}
+		try {
+			List<String> path = new ArrayList<>();
+			Long parentId = tag.getParentId();
+			if (parentId != null && parentId != 0L) {
+				TagDefinition parent = tagMap.get(parentId);
+				if (parent == null) {
+					return null;
+				}
+				List<String> parentPath = resolvePath(parent, tagMap, pathCache, visiting);
+				if (parentPath == null) {
+					return null;
+				}
+				path.addAll(parentPath);
+			}
+			path.add(tag.getTagCode());
+			List<String> immutablePath = List.copyOf(path);
+			pathCache.put(tag.getId(), immutablePath);
+			return immutablePath;
+		} finally {
+			visiting.remove(tag.getId());
+		}
 	}
 
 	private void updateDescendantPaths(String tenantId, TagDefinition current,
