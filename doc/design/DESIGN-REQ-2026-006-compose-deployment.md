@@ -7,10 +7,10 @@
 | 设计编号 | DESIGN-REQ-2026-006 |
 | 关联需求 | [REQ-2026-006](../requirements/REQ-2026-006-compose-deployment.md) |
 | 关联数据库设计 | 不涉及；不改变业务表结构 |
-| 文档版本 | 0.3 |
+| 文档版本 | 0.5 |
 | 文档状态 | 开发中 |
 | 技术负责人 | Codex |
-| 创建/更新日期 | 2026-09-17 |
+| 创建/更新日期 | 2026-09-18 |
 
 ## 2. 设计摘要
 
@@ -20,14 +20,14 @@
 2. 中间件持久化数据绑定到宿主机 `data` 或 `logs` 目录，便于备份、检查和迁移。
 3. 中间件和应用通过 Docker external network 与固定网络别名通信，不使用固定容器 IP。
 4. Nginx 与数据层网络隔离，仅网关同时连接后端网络和入口网络。
-5. 使用 Git SHA 构建 10 个不可变 GHCR 镜像，并通过 SSH 仅更新应用栈。
+5. 使用 Git SHA 构建并推送 10 个不可变 GHCR 镜像，应用栈由运维人员按需手动拉取和更新。
 
 ### 2.2 非目标
 
 - 不实现 Kubernetes、Swarm、跨主机编排和自动扩缩容。
 - 不提供 MySQL、Redis、Nacos、Sentinel 集群高可用。
 - 不拆分共享业务数据库，不引入 Flyway 或 Liquibase。
-- 不在流水线中自动执行生产 SQL、修改 Nacos 配置或迁移中间件数据。
+- 不在流水线中自动执行生产 SQL、修改 Nacos 配置、迁移中间件数据或通过 SSH 发布应用。
 - 不部署 Seata Server、MinIO、消息队列、Elasticsearch 和监控平台。
 
 ### 2.3 需求映射
@@ -37,7 +37,7 @@
 | REQ-001 / AC-001~002 | 独立中间件目录、Compose project、绑定挂载、双网络与别名 | Compose config、容器、目录、网络检查 |
 | REQ-002 / AC-003~004 | 10 个服务 Dockerfile | Dockerfile 静态检查、镜像 inspect |
 | REQ-003 / AC-005~006 | 公共启动配置、Nacos生产配置、应用环境变量 | 编译、环境覆盖、敏感信息扫描 |
-| REQ-004 / AC-007~009 | GitHub Actions、应用部署脚本 | Actions、发布与回滚演练 |
+| REQ-004 / AC-007~009 | GitHub Actions、应用部署脚本 | 镜像发布、手动拉取与回滚演练 |
 | REQ-005 / AC-010~011 | [部署教程](../guide/docker-compose-github-actions-deployment.md) | 文档复核和新环境演练 |
 
 ## 3. 改动范围
@@ -50,7 +50,7 @@
 | 中间件 | `script/docker/middleware/` | MySQL、Redis、Nacos、Sentinel独立目录与Compose |
 | 应用 | `script/docker/app/` | 10个SpringBlade服务、环境模板、部署脚本 |
 | 入口 | `script/docker/ingress/` | Nginx入口，只访问网关 |
-| CI/CD | `.github/workflows/deploy.yml` | Maven打包、GHCR发布、SSH部署 |
+| CI/CD | `.github/workflows/deploy.yml` | Maven打包和GHCR镜像发布，不含SSH部署 |
 | 文档 | `doc/requirements`、`design`、`test`、`guide` | 需求、设计、测试和部署说明 |
 
 ## 4. 部署架构
@@ -58,7 +58,7 @@
 ```mermaid
 flowchart TB
     GH[GitHub Actions] --> GHCR[GHCR]
-    GH -->|SSH和Git SHA| APP
+    OP[运维人员] -->|手动拉取 Git SHA 镜像| APP
 
     subgraph HOST[Docker Host]
         MYSQL[(MySQL)]
@@ -72,7 +72,7 @@ flowchart TB
         INGRESS[[springblade-ingress]]
     end
 
-    GHCR --> APP
+    GHCR -.->|手动拉取| APP
     NACOS --> MYSQL
     APP --> MYSQL
     APP --> REDIS
@@ -276,7 +276,7 @@ Nacos 3首次启动时使用随机强密码初始化`nacos`管理员，管理员
 
 ### 12.2 日常发布
 
-GitHub Actions完成Maven打包、10个SHA镜像推送和SSH部署。应用部署只执行应用Compose的`pull`与`up -d --remove-orphans`，不得操作中间件目录和project。
+GitHub Actions仅完成Maven打包和10个同一Git SHA标签的镜像推送，不绑定`production` Environment，不配置SSH密钥，也不连接服务器。运维人员按需登录GHCR后，在服务器应用目录手动执行`sh deploy.sh <Git SHA>`；应用部署只执行应用Compose的`pull`与`up -d --remove-orphans`，不得操作中间件目录和project。
 
 ### 12.3 回滚
 
@@ -301,9 +301,9 @@ GitHub Actions完成Maven打包、10个SHA镜像推送和SSH部署。应用部�
 - 检查Nginx无法访问`springblade-backend`中的中间件。
 - 检查Nacos可通过别名连接MySQL，应用可连接全部依赖。
 - 检查中间件重建后数据目录保持，应用发布不改变中间件容器和目录。
-- 检查备份、恢复、Git SHA发布与回滚。
+- 检查备份、恢复、Git SHA镜像发布、服务器手动拉取与回滚。
 
-0.3已在腾讯云单机环境完成四个中间件的首次部署、重建和持久化验证；应用、入口、GHCR、备份恢复与回滚仍待执行，当前不能标记为整体验收完成。
+0.5已明确Actions仅负责GHCR镜像发布，服务器应用由运维人员手动拉取；四个中间件已完成首次部署、重建和持久化验证，应用、入口、GHCR重新验证、备份恢复与回滚仍待执行，当前不能标记为整体验收完成。
 
 ## 15. 风险与变更
 
@@ -320,3 +320,5 @@ GitHub Actions完成Maven打包、10个SHA镜像推送和SSH部署。应用部�
 | 2026-09-17 | 0.1 | 建立分层Compose、纯镜像、配置外置和Actions设计 | Codex |
 | 2026-09-17 | 0.2 | 中间件拆分为独立目录和Compose，改用本地目录持久化、双网络与固定别名 | Codex |
 | 2026-09-17 | 0.3 | 记录真实中间件部署结果，并修正MySQL初始化挂载、Nacos JDBC认证和健康检查 | Codex |
+| 2026-09-18 | 0.4 | 增加Actions部署变量预检，明确`DEPLOY_PORT`校验规则 | Codex |
+| 2026-09-18 | 0.5 | 按用户确认取消Actions自动发布，改为仅推送镜像并手动拉取部署 | Codex |
