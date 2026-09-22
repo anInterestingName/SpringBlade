@@ -8,7 +8,8 @@ spring:
         webflux:
           discovery:
             locator:
-              enabled: true
+              # 内置 Locator 会在路由刷新时并发查询全部服务实例，改由只读取服务名的本地实现生成路由
+              enabled: false
     loadbalancer:
       retry:
         enabled: true

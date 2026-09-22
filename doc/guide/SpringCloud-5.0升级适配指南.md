@@ -163,7 +163,7 @@ public class JacksonConfiguration {
 - `springdoc.swagger-ui.disable-swagger-default-url: true`——去掉默认 petstore 项。
 - `blade.swagger.discovery.excluded-services`——排除网关自身、监控等无业务文档的服务。
 
-**⑤ 前置**:网关须开启 `spring.cloud.gateway.server.webflux.discovery.locator.enabled: true`,由服务发现自动生成 `/{serviceId}/**` 路由,聚合 url `/{serviceId}/v3/api-docs` 才能转发到对应服务(此即已删 knife4j 聚合当年依赖的同一开关)。各微服务经 blade-tool 的 webmvc-ui 暴露 `/v3/api-docs`,`SecureRegistry` 默认已放行 `/v3/api-docs/**`。
+**⑤ 前置**:网关必须提供基于服务发现的 `/{serviceId}/**` 动态路由,聚合 url `/{serviceId}/v3/api-docs` 才能转发到对应服务。当前由 `ServiceDiscoveryRouteDefinitionLocator` 仅根据 `ReactiveDiscoveryClient.getServices()` 生成 `lb://serviceId` 路由,内置 `spring.cloud.gateway.server.webflux.discovery.locator.enabled` 保持 `false`,避免路由刷新阶段并发查询各服务实例。各微服务经 blade-tool 的 webmvc-ui 暴露 `/v3/api-docs`,`SecureRegistry` 默认已放行 `/v3/api-docs/**`。
 
 > **机制**:springdoc 的 `/v3/api-docs/swagger-config` 端点每次请求都会重新拷贝单例 `SwaggerUiConfigProperties` 的 urls,故定时刷新时整表替换即在下一次拉取生效,无需重启。仅当控制器用带 description 的 `@Tag` 时其分组才进顶层 tags(与 blade-tool 指南 §9⑧ @ApiOrder 的分组排序相关)。
 
