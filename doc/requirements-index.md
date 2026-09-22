@@ -15,7 +15,7 @@
 
 | 年份 | 下一个编号 | 最后分配日期 | 维护人 |
 | --- | --- | --- | --- |
-| 2026 | `REQ-2026-007` | 2026-09-17 | Codex |
+| 2026 | `REQ-2026-008` | 2026-09-22 | Codex |
 
 > 分配编号后立即将“下一个编号”加一。
 
@@ -29,6 +29,7 @@
 | [REQ-2026-004](requirements/REQ-2026-004-image-prompt-reverse.md) | 图片提示词反推与标签化分析 | AI 分析、租户标签快照、提示词生成 | 0.4 | 开发中 | [需求文档 0.4](requirements/REQ-2026-004-image-prompt-reverse.md) | 不涉及 | [详细设计 0.2](design/DESIGN-REQ-2026-004-image-prompt-reverse.md) | [测试文档 0.2](test/TEST-REQ-2026-004-image-prompt-reverse.md) | 待指定 | 2026-09-17 |
 | [REQ-2026-005](requirements/REQ-2026-005-prompt-scope-and-publishing.md) | 提示词类型、发布方式与数据权限增强 | AI 提示词管理、权限与租户隔离 | 0.6 | 开发中 | [需求文档 0.6](requirements/REQ-2026-005-prompt-scope-and-publishing.md) | [数据库设计 0.2](database/DB-REQ-2026-005-prompt-scope-and-publishing.md) | [详细设计 0.3](design/DESIGN-REQ-2026-005-prompt-scope-and-publishing.md) | [测试文档 0.2](test/TEST-REQ-2026-005-prompt-scope-and-publishing.md) | 用户 | 2026-09-16 |
 | [REQ-2026-006](requirements/REQ-2026-006-compose-deployment.md) | Docker Compose 分层部署与 GitHub Actions 发布 | Docker 镜像、基础设施、应用部署、CI/CD | 0.4 | 开发中 | [需求文档 0.4](requirements/REQ-2026-006-compose-deployment.md) | 不涉及 | [详细设计 0.5](design/DESIGN-REQ-2026-006-compose-deployment.md) | [测试文档 0.5](test/TEST-REQ-2026-006-compose-deployment.md) | 用户 | 2026-09-18 |
+| [REQ-2026-007](requirements/REQ-2026-007-loadbalancer-isolation.md) | 跨服务负载均衡实例隔离 | Gateway、Feign、公共负载均衡配置 | 0.1 | 开发中 | [需求文档 0.1](requirements/REQ-2026-007-loadbalancer-isolation.md) | 不涉及 | [详细设计 0.1](design/DESIGN-REQ-2026-007-loadbalancer-isolation.md) | [测试文档 0.1](test/TEST-REQ-2026-007-loadbalancer-isolation.md) | 用户 | 2026-09-22 |
 
 ## 状态说明
 
