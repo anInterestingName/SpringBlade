@@ -17,8 +17,6 @@ package org.springblade.gateway.route;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
-import org.springframework.cloud.gateway.filter.FilterDefinition;
-import org.springframework.cloud.gateway.filter.factory.StripPrefixGatewayFilterFactory;
 import org.springframework.cloud.gateway.handler.predicate.PathRoutePredicateFactory;
 import org.springframework.cloud.gateway.handler.predicate.PredicateDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
@@ -29,9 +27,7 @@ import reactor.core.publisher.Flux;
 
 import java.net.URI;
 
-import static org.springframework.cloud.gateway.filter.factory.StripPrefixGatewayFilterFactory.PARTS_KEY;
 import static org.springframework.cloud.gateway.handler.predicate.RoutePredicateFactory.PATTERN_KEY;
-import static org.springframework.cloud.gateway.support.NameUtils.normalizeFilterFactoryName;
 import static org.springframework.cloud.gateway.support.NameUtils.normalizeRoutePredicateName;
 
 /**
@@ -63,7 +59,6 @@ public class ServiceDiscoveryRouteDefinitionLocator implements RouteDefinitionLo
 		routeDefinition.setId(discoveryClient.getClass().getSimpleName() + "_" + serviceId);
 		routeDefinition.setUri(URI.create("lb://" + serviceId));
 		routeDefinition.getPredicates().add(buildPathPredicate(serviceId));
-		routeDefinition.getFilters().add(buildStripPrefixFilter());
 		return routeDefinition;
 	}
 
@@ -72,13 +67,6 @@ public class ServiceDiscoveryRouteDefinitionLocator implements RouteDefinitionLo
 		predicate.setName(normalizeRoutePredicateName(PathRoutePredicateFactory.class));
 		predicate.addArg(PATTERN_KEY, "/" + serviceId + "/**");
 		return predicate;
-	}
-
-	private FilterDefinition buildStripPrefixFilter() {
-		FilterDefinition filter = new FilterDefinition();
-		filter.setName(normalizeFilterFactoryName(StripPrefixGatewayFilterFactory.class));
-		filter.addArg(PARTS_KEY, "1");
-		return filter;
 	}
 
 }
