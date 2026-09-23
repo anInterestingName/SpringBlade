@@ -8,10 +8,10 @@
 | 关联需求 | [REQ-2026-007](../requirements/REQ-2026-007-loadbalancer-isolation.md) |
 | 关联数据库设计 | 不涉及 |
 | 关联测试 | [TEST-REQ-2026-007](../test/TEST-REQ-2026-007-loadbalancer-isolation.md) |
-| 文档版本 | 0.2 |
+| 文档版本 | 0.3 |
 | 文档状态 | 开发中 |
 | 技术负责人 | Codex |
-| 创建/更新日期 | 2026-09-21 / 2026-09-22 |
+| 创建/更新日期 | 2026-09-21 / 2026-09-24 |
 
 ## 2. 设计摘要
 
@@ -31,7 +31,7 @@
 
 | 需求/验收标准 | 设计落点 | 验证方式 |
 | --- | --- | --- |
-| REQ-001 / AC-001、AC-002 | Gateway 本地动态路由 Locator、关闭内置 Locator | 路由定义检查、三服务跨 Watch 周期测试 |
+| REQ-001 / AC-001、AC-002、AC-005 | Gateway 本地动态路由 Locator、关闭内置 Locator、保留刷新事件 | 路由定义、跨周期及服务增删测试 |
 | REQ-002 / AC-003 | 实例归属包装器 | 错误实例注入测试 |
 | REQ-002 / AC-004 | 本地动态路由与 Spring 默认负载均衡实现 | 关闭 Blade 开关启动及路由测试 |
 
@@ -50,7 +50,7 @@
 
 ```mermaid
 flowchart LR
-    Watch[Nacos Watch / RefreshRoutesEvent] --> Cache[CachingRouteDefinitionLocator]
+    Watch[心跳事件 / RefreshRoutesEvent，待运行时确认] --> Cache[CachingRouteDefinitionLocator]
     Cache --> Local[ServiceDiscoveryRouteDefinitionLocator]
     Local --> Services[ReactiveDiscoveryClient.getServices]
     Services --> AuthRoute[lb://blade-auth]
@@ -68,7 +68,8 @@ sequenceDiagram
     participant G as GrayscaleLoadBalancer
     participant V as ServiceId 校验包装器
     R->>D: Path /serviceId/**
-    D-->>R: StripPrefix 1 / lb://serviceId
+    D-->>R: lb://serviceId
+    Note over R,D: 现有 RequestFilter 只移除一次服务名前缀
     R->>F: choose(serviceId)
     F->>C: 获取/创建命名上下文
     C->>G: 使用固定 serviceId 的 Supplier 选择实例
@@ -85,7 +86,7 @@ sequenceDiagram
 
 | 类型 | 名称 | 职责 |
 | --- | --- | --- |
-| RouteDefinitionLocator | `ServiceDiscoveryRouteDefinitionLocator` | 对服务名去空、去重，为每个 `serviceId` 生成固定 Path、StripPrefix 与 `lb://` 路由 |
+| RouteDefinitionLocator | `ServiceDiscoveryRouteDefinitionLocator` | 对服务名去空、去重，为每个 `serviceId` 生成固定 Path 与 `lb://` 路由；不添加前缀裁剪过滤器 |
 | ImportFilter | `BladeLoadBalancerAutoConfigurationImportFilter` | 只排除第三方根自动配置，保留依赖类与属性 |
 | AutoConfiguration | `BladeLoadBalancerIsolationAutoConfiguration` | 根上下文只登记默认命名客户端配置 |
 | Client Configuration | `BladeLoadBalancerClientConfiguration` | 在每个 `serviceId` 子上下文创建独立负载均衡器 |
@@ -95,7 +96,7 @@ sequenceDiagram
 
 1. `ServiceDiscoveryRouteDefinitionLocator.getRouteDefinitions()` 只能调用 `getServices()`；不得调用 `getInstances()`，实例选择留给实际请求的 LoadBalancer。
 2. 路由 ID 沿用内置实现的 `ReactiveDiscoveryClient` 简单类名加 `serviceId` 风格，路由 URI 为 `lb://serviceId`。
-3. Path 为 `/{serviceId}/**`，`StripPrefix` 固定移除一段，保持现有外部访问路径与下游路径。
+3. Path 为 `/{serviceId}/**`；现有 `RequestFilter` 负责移除一次服务名前缀。本地 Locator 不再添加 `StripPrefix`，避免下游路径被裁剪两次。
 4. `BladeLoadBalancerClientConfiguration` 不添加组件或配置类注解，避免进入根组件扫描；由 `LoadBalancerClientFactory` 显式注册。
 5. `LoadBalancerClientSpecification` 名称以 `default.` 开头，使配置应用到全部服务命名上下文。
 6. `serviceId` 使用 `LoadBalancerClientFactory.getName(environment)` 从当前命名上下文读取，禁止从请求路径或全局可变状态推断。
@@ -128,11 +129,11 @@ spring:
               enabled: false
 ```
 
-该开关只禁止内置 `DiscoveryClientRouteDefinitionLocator`；本地 `ServiceDiscoveryRouteDefinitionLocator` 由 Gateway 组件扫描注册。继续沿用 `blade.loadbalancer.enabled`、`blade.loadbalancer.version` 和 `blade.loadbalancer.prior-ip-pattern`：
+该开关禁止内置 `DiscoveryClientRouteDefinitionLocator`；本地 `ServiceDiscoveryRouteDefinitionLocator` 由 Gateway 组件扫描注册。当前 Nacos Discovery 依赖的心跳发布器同时受此开关、`spring.cloud.nacos.discovery.heart-beat.enabled=true` 或 Spring Boot Admin 服务端条件控制。验证分支未单独启用心跳，服务增删后的自动路由刷新须运行时核实；如需独立启用心跳，应先确认 Gateway 路由只按服务名重建并完成服务增删测试。继续沿用 `blade.loadbalancer.enabled`、`blade.loadbalancer.version` 和 `blade.loadbalancer.prior-ip-pattern`：
 
 - `enabled=true` 或缺省：使用本地隔离配置和 Blade 灰度规则。
 - `enabled=false`：公共负载均衡隔离配置不注册，Spring Cloud 默认 `RoundRobinLoadBalancer` 生效；Gateway 本地动态路由不受该开关影响。
-- 不新增 Nacos Data ID 或环境变量。
+- 当前分支不新增 Nacos Data ID 或环境变量；心跳开关是否需要显式配置，待动态刷新验收决定。
 
 ## 9. 异常与日志
 
@@ -156,11 +157,11 @@ spring:
 - 依赖：确认仍为单一 `blade-starter-loadbalancer` 和 `spring-cloud-loadbalancer` 版本。
 - 产物：确认 Gateway JAR 包含本地 Locator，`bootstrap.yml` 已关闭内置 Locator；`blade-common` 第一版防御产物保持完整。
 - 静态行为：本地 Locator 源码和字节码不得引用 `getInstances`。
-- 运行时：确认内置 `DiscoveryClientRouteDefinitionLocator` Bean 不存在，本地 Locator 存在；并发交替访问 `blade-system`、`blade-auth` 与 `blade-ai`，跨越至少三个 Watch 周期持续成功。
+- 运行时：确认内置 `DiscoveryClientRouteDefinitionLocator` Bean 不存在、本地 Locator 存在，确认心跳与 `RefreshRoutesEvent` 实际发生；并发交替访问 `blade-system`、`blade-auth` 与 `blade-ai`，跨越至少三个实际刷新周期持续成功；验证新服务注册与下线后路由随之增删。
 - Feign：由至少一个调用两个不同服务的调用方验证无交叉路由。
 - 测试执行结果记录在关联测试文档；编译不替代真实环境验收。
 
-实际完成范围：第一版公共自动配置过滤、命名客户端隔离和实例归属校验已实现并上线；JDK 21 下 Gateway、auth、system 及依赖共 11 个模块曾打包成功。线上复查确认第一版组件均已加载但故障仍存在；关闭 LoadBalancer 缓存时 100 次请求中 99 次异常，关闭 Blade 自定义负载均衡时 90 次请求全部异常，据此排除两者为根因。本轮已新增只读取服务名的 Gateway Locator 并关闭内置 Locator，JDK 21 下 Gateway 及依赖 3 个模块编译成功；新镜像打包和真实环境验证待执行。
+实际完成范围：第一版公共自动配置过滤、命名客户端隔离和实例归属校验已实现并上线；JDK 21 下 Gateway、auth、system 及依赖共 11 个模块曾打包成功。线上复查确认第一版组件均已加载但故障仍存在；关闭 LoadBalancer 缓存时 100 次请求中 99 次异常，关闭 Blade 自定义负载均衡时 90 次请求全部异常，据此排除两者为根因。本轮新增只读取服务名的 Gateway Locator 并关闭内置 Locator，JDK 21 下 Gateway 及依赖 3 个模块编译成功。`0285b37c` 已移除重复的 `StripPrefix`；用户确认验证分支修复了 404 与双重裁剪，但未提供完整接口证据。跨周期并发、Feign、路由刷新事件及服务增删仍待正式验收。
 
 ## 12. 风险、评审与变更
 
@@ -171,8 +172,10 @@ spring:
 | DESIGN-ITEM-003 | 后续升级到官方修复版可能形成重复配置 | 升级时先比较源码并移除本地兼容层 |
 | DESIGN-ITEM-004 | 本地 Locator 若仍间接调用实例查询会重新引入污染链 | 源码、字节码和运行时调用行为三层检查 |
 | DESIGN-ITEM-005 | 自定义路由与内置路由同时装配会产生重复路由 | 配置显式关闭内置 Locator，运行时检查 Bean 与路由数量 |
+| DESIGN-ITEM-006 | 关闭内置 Locator 也可能使 Nacos 心跳发布器不装配，导致路由表在服务增删后不刷新 | 当前依赖条件已静态核对；运行时确认事件及路由增删，必要时独立启用心跳 |
 
 | 日期 | 版本 | 变更内容 | 修改人 |
 | --- | --- | --- | --- |
 | 2026-09-21 | 0.1 | 初稿与实现设计 | Codex |
 | 2026-09-22 | 0.2 | 补充线上 A/B 结论，新增仅按服务名生成 Gateway 动态路由的设计 | Codex |
+| 2026-09-24 | 0.3 | 修正双重裁剪后的最终路径设计，记录心跳装配与动态刷新验证边界 | Codex |
