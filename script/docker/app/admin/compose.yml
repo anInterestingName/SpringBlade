@@ -1,0 +1,31 @@
+name: springblade-admin
+
+services:
+  blade-admin:
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:?IMAGE_NAMESPACE is required}/blade-admin:${IMAGE_TAG:?IMAGE_TAG is required}
+    restart: unless-stopped
+    stop_grace_period: 30s
+    mem_limit: ${ADMIN_MEMORY_LIMIT:-512m}
+    mem_reservation: ${ADMIN_MEMORY_RESERVATION:-384m}
+    cpus: ${ADMIN_CPUS:-0.5}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xms128m -Xmx256m -Xss512k -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:MaxDirectMemorySize=64m -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=96m -XX:+ExitOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Shanghai}
+      BLADE_NACOS_ADDR: ${BLADE_NACOS_ADDR:?BLADE_NACOS_ADDR is required}
+      BLADE_NACOS_NAMESPACE: ${BLADE_NACOS_NAMESPACE:-prod}
+      BLADE_NACOS_USERNAME: ${BLADE_NACOS_USERNAME:?BLADE_NACOS_USERNAME is required}
+      BLADE_NACOS_PASSWORD: ${BLADE_NACOS_PASSWORD:?BLADE_NACOS_PASSWORD is required}
+      BLADE_SENTINEL_ADDR: ${BLADE_SENTINEL_ADDR:?BLADE_SENTINEL_ADDR is required}
+      SPRING_CLOUD_NACOS_DISCOVERY_IP: ${DISCOVERY_IP:?DISCOVERY_IP is required}
+      SPRING_CLOUD_NACOS_DISCOVERY_PORT: ${DISCOVERY_PORT:-7002}
+    ports:
+      - ${ADMIN_BIND_ADDRESS:-0.0.0.0}:${ADMIN_PORT:-7002}:7002
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "3"

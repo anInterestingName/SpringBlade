@@ -1,5 +1,7 @@
 # SpringBlade Docker Compose 与 GitHub Actions 部署教程
 
+> 本文保留单机中间件和入口的基础部署说明。六个应用拆分到上海、东京、硅谷三台服务器时，优先阅读[`SpringBlade 三服务器 Compose 部署文档`](three-server-compose-deployment.md)；该文档覆盖跨主机地址、端口白名单、JVM资源和六套应用 Compose。
+
 ## 1. 部署范围
 
 本教程用于在单台Linux服务器部署SpringBlade 5.0.1。每个中间件使用独立目录和独立Compose project，数据绑定到宿主机目录。
@@ -10,7 +12,7 @@
 | 缓存 | `springblade-redis` | Redis 7 |
 | 注册配置中心 | `springblade-nacos` | Nacos 3.2.2 |
 | 流量治理 | `springblade-sentinel` | Sentinel Dashboard 1.8.0 |
-| 应用 | `springblade-app` | 10个SpringBlade微服务 |
+| 应用 | `springblade-<service>` | 每个SpringBlade微服务独立project；六服务三机模板见三服务器文档 |
 | 入口 | `springblade-ingress` | Nginx |
 
 本方案不部署Seata Server、MinIO、消息队列、Elasticsearch和监控平台，不提供中间件集群高可用。
@@ -57,9 +59,13 @@
 │       ├── data/
 │       └── logs/
 ├── app/
-│   ├── compose.yml
-│   ├── deploy.sh
-│   └── .env
+│   ├── README.md
+│   ├── gateway/
+│   │   ├── compose.yml
+│   │   └── .env
+│   └── service-name/
+│       ├── compose.yml
+│       └── .env
 └── ingress/
     ├── compose.yml
     ├── nginx.conf
@@ -93,10 +99,10 @@ docker network inspect springblade-ingress >/dev/null 2>&1 \
 
 | 网络 | 服务 |
 | --- | --- |
-| `springblade-backend` | MySQL、Redis、Nacos、Sentinel、全部应用、Gateway |
+| `springblade-backend` | 单机模式中的 MySQL、Redis、Nacos、Sentinel 和同机应用 |
 | `springblade-ingress` | Nginx、Gateway |
 
-只有Gateway同时连接两个网络。Nginx不能连接`springblade-backend`，不能直接访问数据库、缓存和注册中心。
+这是单机基础设施的本机网络模型。三机模式下 Docker bridge 不跨服务器，Gateway只加入上海本机的`springblade-ingress`；东京和硅谷应用使用宿主机地址和Nacos注册信息访问远端依赖。Nginx不能连接`springblade-backend`，不能直接访问数据库、缓存和注册中心。
 
 ### 3.2 网络别名
 
@@ -137,7 +143,7 @@ docker network inspect springblade-ingress >/dev/null 2>&1 \
 | Nginx HTTP | 80 | `0.0.0.0:80` |
 | Nginx HTTPS | 443 | `0.0.0.0:443` |
 
-Nacos Console使用宿主机`18080`，避免与Gateway调试端口`8080`冲突。腾讯云安全组只对外开放SSH和实际使用的80/443。
+Nacos Console使用宿主机`18080`，避免与Gateway调试端口`8080`冲突。单机模式腾讯云安全组只对外开放SSH和实际使用的80/443；三机模式的额外白名单规则见三服务器文档。
 
 ## 4. 服务器准备
 
@@ -165,7 +171,7 @@ sudo mkdir -p \
   /opt/springblade/middleware/redis/{conf,data,backup} \
   /opt/springblade/middleware/nacos/{conf,data,logs} \
   /opt/springblade/middleware/sentinel/{data,logs} \
-  /opt/springblade/app \
+  /opt/springblade/app/gateway \
   /opt/springblade/ingress
 
 sudo chown -R "$USER":"$USER" /opt/springblade
@@ -177,7 +183,7 @@ chmod 700 /opt/springblade/middleware/redis/backup
 
 ```bash
 chmod 600 /opt/springblade/middleware/*/.env
-chmod 600 /opt/springblade/app/.env
+chmod 600 /opt/springblade/app/*/.env
 chmod 600 /opt/springblade/ingress/.env
 ```
 
@@ -415,9 +421,17 @@ Sentinel Dashboard不依赖本地目录持久化规则。需要规则持久化�
 
 ## 9. 应用部署
 
-### 9.1 应用参数
+### 9.1 Gateway独立目录
 
-`/opt/springblade/app/.env`：
+应用不再共用一个聚合Compose。每个应用位于`/opt/springblade/app/<service>/`并使用独立`.env`和`springblade-<service>` project。Gateway示例目录如下；六服务三机分配和其他环境模板见三服务器文档：
+
+```text
+/opt/springblade/app/gateway/
+├── compose.yml
+└── .env
+```
+
+`/opt/springblade/app/gateway/.env`：
 
 ```dotenv
 REGISTRY=ghcr.io
@@ -426,44 +440,30 @@ IMAGE_TAG=<12位Git SHA>
 
 TZ=Asia/Shanghai
 SPRING_PROFILES_ACTIVE=prod
-JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=75.0 -Dfile.encoding=UTF-8
+JAVA_TOOL_OPTIONS=-Xms128m -Xmx256m -Xss512k -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:MaxDirectMemorySize=128m -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=96m -XX:+ExitOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Shanghai
 
-BLADE_NACOS_ADDR=springblade-nacos:8848
+BLADE_NACOS_ADDR=<SHANGHAI_PUBLIC_IP>:8848
 BLADE_NACOS_NAMESPACE=prod
 BLADE_NACOS_USERNAME=<Nacos账号>
 BLADE_NACOS_PASSWORD=<Nacos密码>
-BLADE_SENTINEL_ADDR=springblade-sentinel:8858
+BLADE_SENTINEL_ADDR=<SHANGHAI_PUBLIC_IP>:8858
 
-BLADE_DATASOURCE_URL=jdbc:mysql://springblade-mysql:3306/blade?useSSL=false&useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
-BLADE_DATASOURCE_USERNAME=blade
-BLADE_DATASOURCE_PASSWORD=<业务库密码>
-
-BLADE_REDIS_HOST=springblade-redis
+BLADE_REDIS_HOST=<SHANGHAI_PUBLIC_IP>
 BLADE_REDIS_PORT=6379
 BLADE_REDIS_PASSWORD=<Redis密码>
 BLADE_REDIS_DATABASE=0
 
-BLADE_OAUTH2_PUBLIC_KEY=<实际公钥>
-BLADE_OAUTH2_PRIVATE_KEY=<实际私钥>
 BLADE_TOKEN_SIGN_KEY=<实际签名密钥>
 BLADE_TOKEN_CRYPTO_KEY=<实际加密密钥>
 
 GATEWAY_BIND_ADDRESS=127.0.0.1
 GATEWAY_PORT=8080
-GATEWAY_LIVENESS_URL=http://127.0.0.1:8080/
-GATEWAY_LIVENESS_RETRIES=30
-GATEWAY_LIVENESS_INTERVAL_SECONDS=10
+GATEWAY_MEMORY_LIMIT=640m
+GATEWAY_MEMORY_RESERVATION=384m
+GATEWAY_CPUS=1.0
 ```
 
-`blade-ai`启用图片反推时补充：
-
-```dotenv
-BLADE_AI_REVERSE_FAST_BASE_URL=<Fast服务地址>
-BLADE_AI_REVERSE_FAST_API_KEY=<API Key>
-BLADE_AI_REVERSE_TARGET_ENGINE=<目标引擎>
-```
-
-全部应用加入`springblade-backend`，Gateway额外加入`springblade-ingress`。
+三机模式下Gateway只加入上海本机的`springblade-ingress`，通过上海公网地址访问Nacos、Redis和Sentinel；东京、硅谷应用不加入上海的Docker网络，使用各自目录的环境模板和Nacos宿主机注册地址。
 
 ### 9.2 GHCR登录
 
@@ -474,14 +474,22 @@ echo '<GHCR_READ_TOKEN>' | docker login ghcr.io \
 
 凭据只授予镜像读取权限，不写入Compose或`.env`。
 
-### 9.3 手动发布
+### 9.3 配置检查
 
 ```bash
-cd /opt/springblade/app
-sh deploy.sh <12位Git SHA>
+cd /opt/springblade/app/gateway
+docker compose -p springblade-gateway --env-file .env -f compose.yml config --quiet
 ```
 
-应用部署脚本只操作`springblade-app`，不得停止或重建任何中间件project。该脚本由运维人员按需在服务器手动执行，不由 GitHub Actions 远程调用。
+配置检查不会拉取镜像或启动容器。确认解析结果后，手动部署命令为：
+
+```bash
+docker compose -p springblade-gateway --env-file .env -f compose.yml pull
+docker compose -p springblade-gateway --env-file .env -f compose.yml up -d
+docker compose -p springblade-gateway --env-file .env -f compose.yml ps
+```
+
+上述命令只操作Gateway project，不得停止或重建中间件及其他应用project，也不由 GitHub Actions 远程调用。
 
 ## 10. Nginx入口
 
@@ -531,8 +539,10 @@ Actions 仅需要仓库 `GITHUB_TOKEN` 的 `packages: write` 权限。服务器�
 echo '<GHCR_READ_TOKEN>' | docker login ghcr.io \
   -u '<github-user>' --password-stdin
 
-cd /opt/springblade/app
-sh deploy.sh <12位Git SHA>
+cd /opt/springblade/app/gateway
+# 修改.env中的IMAGE_TAG后执行
+docker compose -p springblade-gateway --env-file .env -f compose.yml pull
+docker compose -p springblade-gateway --env-file .env -f compose.yml up -d
 ```
 
 私有 GHCR 包使用只读 `read:packages` 凭据；凭据只保存在服务器或运维终端，不写入仓库、Compose 文件或 `.env`。
@@ -547,7 +557,7 @@ sh deploy.sh <12位Git SHA>
 4. 启动Nacos并确认连接MySQL成功
 5. 启动Sentinel
 6. 初始化Nacos配置
-7. 启动SpringBlade应用
+7. 按依赖顺序逐个启动SpringBlade应用；六服务三机顺序见三服务器文档
 8. 检查服务注册和依赖连接
 9. 启动Nginx
 ```
@@ -615,14 +625,19 @@ docker network inspect springblade-backend
 docker network inspect springblade-ingress
 ```
 
-确认固定别名存在，Gateway同时连接两个网络，Nginx只连接入口网络。
+确认上海入口网络存在，Gateway和Nginx只连接入口网络；跨主机应用通过Nacos注册的宿主机地址通信。
 
 ### 14.3 应用
 
-在Nacos `prod` namespace确认以下服务按实际部署范围注册：
+在Nacos `prod` namespace确认服务按实际部署范围注册。当前Gateway检查：
 
 ```text
 blade-gateway
+```
+
+后续应用目录完成并部署后，再逐项确认：
+
+```text
 blade-auth
 blade-admin
 blade-develop
@@ -643,14 +658,16 @@ curl --silent --output /dev/null --write-out '%{http_code}\n' http://127.0.0.1:8
 
 ## 15. 回滚
 
-应用回滚：
+单个应用回滚，以Gateway为例：
 
 ```bash
-cd /opt/springblade/app
-sh deploy.sh <上一稳定SHA>
+cd /opt/springblade/app/gateway
+# 将.env中的IMAGE_TAG改为上一稳定SHA
+docker compose -p springblade-gateway --env-file .env -f compose.yml pull
+docker compose -p springblade-gateway --env-file .env -f compose.yml up -d
 ```
 
-应用回滚不自动回滚MySQL升级脚本、Nacos配置、外部AI服务和前端。包含数据库或配置变化的版本必须按对应需求文档执行兼容回滚。
+单个应用回滚不得重建其他应用或中间件，也不自动回滚MySQL升级脚本、Nacos配置、外部AI服务和前端。包含数据库或配置变化的版本必须按对应需求文档执行兼容回滚。
 
 ## 16. 运维限制
 
@@ -675,5 +692,6 @@ sh deploy.sh <上一稳定SHA>
 - [ ] `blade`全量SQL只在确认空库时执行。
 - [ ] Nacos `prod` namespace和公共配置已创建。
 - [ ] 10个应用镜像使用同一Git SHA标签。
-- [ ] 手动应用发布不改变中间件容器和本地数据目录。
+- [ ] 每个已提供应用使用独立目录、`.env`和`springblade-<service>` project。
+- [ ] 手动发布单个应用不改变其他应用、中间件容器和本地数据目录。
 - [ ] MySQL备份和手动应用回滚均已演练。

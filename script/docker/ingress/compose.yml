@@ -14,9 +14,9 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - springblade-platform
+      - springblade-ingress
 
 networks:
-  springblade-platform:
+  springblade-ingress:
     external: true
-    name: springblade-platform
+    name: springblade-ingress

@@ -6,21 +6,21 @@
 | --- | --- |
 | 需求名称 | Docker Compose 分层部署与 GitHub Actions 发布 |
 | 需求编号 | REQ-2026-006 |
-| 文档版本 | 0.4 |
+| 文档版本 | 0.6 |
 | 所属模块 | Docker 镜像、基础设施、应用部署、CI/CD |
 | 目标版本/迭代 | SpringBlade 5.0.1 |
 | 文档状态 | 开发中 |
 | 产品负责人 | 用户 |
 | 技术负责人 | Codex |
 | 创建日期 | 2026-09-17 |
-| 最后更新日期 | 2026-09-18 |
-| 关联事项 | [详细设计](../design/DESIGN-REQ-2026-006-compose-deployment.md)、[测试文档](../test/TEST-REQ-2026-006-compose-deployment.md)、[部署教程](../guide/docker-compose-github-actions-deployment.md) |
+| 最后更新日期 | 2026-09-20 |
+| 关联事项 | [详细设计](../design/DESIGN-REQ-2026-006-compose-deployment.md)、[测试文档](../test/TEST-REQ-2026-006-compose-deployment.md)、[单机部署教程](../guide/docker-compose-github-actions-deployment.md)、[三服务器部署文档](../guide/three-server-compose-deployment.md) |
 
 ## 2. 摘要与目标
 
 ### 2.1 摘要
 
-现有单一 Compose 同时管理 Nacos、Redis、Nginx 和全部微服务，应用发布可能影响有状态基础设施，且镜像固化了 `test` profile、固定容器 IP 和内网地址。本需求将 MySQL、Redis、Nacos、Sentinel、应用和入口拆分为独立 Compose project；中间件按服务使用独立目录和宿主机 `data` 绑定挂载，并由 GitHub Actions 构建不可变微服务镜像、推送 GHCR，应用由运维人员按需在服务器手动拉取和切换。
+现有单一 Compose 同时管理 Nacos、Redis、Nginx 和全部微服务，应用发布可能影响有状态基础设施，且镜像固化了 `test` profile、固定容器 IP 和内网地址。本需求将 MySQL、Redis、Nacos、Sentinel、应用和入口拆分为独立 Compose project；中间件及每个业务应用分别使用独立目录和 project，由 GitHub Actions 构建不可变微服务镜像、推送 GHCR，应用由运维人员按需在服务器逐个手动拉取和切换。
 
 ### 2.2 需求目标
 
@@ -29,6 +29,8 @@
 3. 生产运行参数通过环境变量和 Nacos 外置，消除固定 IP 与固定 namespace。
 4. GitHub Actions 使用 Git SHA 镜像标签构建并推送可审计的镜像，服务器可按需手动拉取并回滚到历史标签。
 5. 提供从服务器目录、网络、权限、基础设施初始化、Nacos 配置导入到镜像手动拉取和回滚的完整教程。
+6. 每个业务应用使用 `app/<service>/` 独立目录、环境文件和 Compose project，允许按服务器和资源情况单独部署、停止与回滚。
+7. 在现有三台测试服务器上按资源分配 `gateway`、`auth`、`system`、`ai`、`admin`、`log`，跨主机通过上海节点公开的 Nacos、MySQL、Redis、Sentinel 地址通信，并通过安全组白名单限制来源。
 
 ### 2.3 非目标
 
@@ -48,19 +50,21 @@
 
 ### 3.1 范围内
 
-- 独立 `mysql`、`redis`、`nacos`、`sentinel`、`app`、`ingress` Compose。
+- 独立 `mysql`、`redis`、`nacos`、`sentinel`、`ingress` Compose，以及按 `app/<service>/` 拆分的应用 Compose。
 - 每个中间件使用独立服务目录，持久化数据绑定到宿主机 `data` 或 `logs` 目录。
 - 后端与入口使用独立 external network，通过固定网络别名通信，不使用固定容器 IP。
 - 10 个现有微服务 Dockerfile 的纯运行时改造。
 - Nacos、Sentinel、数据库、Redis和安全密钥的环境变量化。
 - GHCR 镜像发布、手动拉取部署、不可变标签与回滚脚本。
 - 需求、设计、测试和部署教程。
+- 三服务器服务分配、JVM/容器资源限制、跨主机注册地址和部署前信息清单。
 
 ### 3.2 范围外
 
 - Saber 前端构建与发布；前端应使用独立流水线。
 - MySQL、Redis、Nacos 集群高可用方案；当前模板为单机参考实现。
 - 云数据库、云 Redis、Harbor 等供应商专属配置。
+- 跨主机高可用、自动故障转移和公网链路加密；测试阶段仅提供公网白名单模板。
 
 ## 4. 业务流程
 
@@ -73,8 +77,8 @@ flowchart TD
     E --> F{镜像全部成功?}
     F -- 否 --> D
     F -- 是 --> G([镜像可按需手动拉取])
-    G --> H[服务器更新 IMAGE_TAG 并 pull]
-    H --> I[Compose 重建应用容器]
+    G --> H[服务器更新目标应用 IMAGE_TAG 并 pull]
+    H --> I[Compose 重建目标应用容器]
     I --> J{健康与业务验证通过?}
     J -- 否 --> K[使用上一 SHA 手动回滚]
     J -- 是 --> L([发布完成])
@@ -93,8 +97,8 @@ flowchart TD
 ### 5.1 REQ-001 分层 Compose
 
 - 优先级：Must
-- 处理规则：四个中间件、业务应用和入口分别使用独立 Compose project；手动应用部署不得停止、重建或清理中间件目录。
-- `AC-001`：Given 中间件已运行，When 运维人员手动更新应用镜像标签并执行应用部署，Then MySQL、Redis、Nacos、Sentinel 容器及其宿主机持久化目录保持不变。
+- 处理规则：四个中间件、每个业务应用和入口分别使用独立 Compose project；手动应用部署不得停止、重建其他应用或清理中间件目录。
+- `AC-001`：Given 中间件和其他应用已运行，When 运维人员手动更新一个应用的镜像标签并执行该应用部署，Then MySQL、Redis、Nacos、Sentinel及其他应用容器保持不变。
 - `AC-002`：Given 全部服务位于同一主机，When 创建 `springblade-backend` 与 `springblade-ingress` external network，Then 应用通过固定网络别名访问中间件，Nginx 只能通过入口网络访问网关，服务重建后不依赖固定 IP。
 
 ### 5.2 REQ-002 纯微服务镜像
@@ -116,14 +120,21 @@ flowchart TD
 - 优先级：Must
 - 处理规则：Actions 编译一次，按现有 Dockerfile 构建并推送 10 个 GHCR 镜像，以提交 SHA 前 12 位作为标签；Actions 不执行 SSH、Environment 审批或服务器部署。
 - `AC-007`：Given tag 推送或手工触发，When工作流成功，Then GHCR 中存在同一 SHA 的全部服务镜像。
-- `AC-008`：Given服务器已配置 `.env` 和 GHCR 拉取权限，When运维人员手动执行部署脚本，Then仅应用栈切换到新 SHA。
-- `AC-009`：Given上一稳定 SHA，When运维人员手动再次执行部署脚本，Then应用栈回到对应镜像版本。
+- `AC-008`：Given目标应用目录已配置 `.env` 和 GHCR 拉取权限，When运维人员手动执行该应用部署命令，Then仅目标应用切换到新 SHA。
+- `AC-009`：Given上一稳定 SHA，When运维人员更新目标应用标签并重新部署，Then仅该应用回到对应镜像版本。
 
 ### 5.5 REQ-005 部署教程
 
 - 优先级：Must
 - `AC-010`：Given一台新 Linux 服务器，When按教程准备 Docker、环境文件、基础设施、Nacos配置和 GHCR 只读拉取权限，Then能够完成首次部署所需的全部可执行步骤。
 - `AC-011`：Given已有数据库，When阅读升级章节，Then明确禁止重复执行全量脚本，并能找到升级、备份和回滚说明。
+
+### 5.6 REQ-006 三服务器应用分配
+
+- 优先级：Must
+- 处理规则：上海部署 `gateway`，东京部署 `auth + system`，硅谷部署 `ai + admin + log`；每个服务使用独立 Compose project 和独立 `.env`，通过 Nacos 注册宿主机地址与映射端口。
+- `AC-012`：Given 三台服务器的中间件端口已按最小来源白名单开放，When分别校验六套 Compose，Then每套配置只包含对应服务、服务端口与记录中的 JVM/容器资源限制，不依赖跨主机 Docker bridge。
+- `AC-013`：Given应用容器启动，When检查 Nacos 注册实例，Then实例地址不是 `172.x` 容器地址，Gateway能够通过注册信息发现远端服务；未提供真实地址和凭据时不得执行部署。
 
 ## 6. 业务规则
 
@@ -133,14 +144,15 @@ flowchart TD
 | BR-002 | `.env` 只存在服务器和本地环境，不提交 Git | 全部部署栈 | 视为安全缺陷 |
 | BR-003 | 全量建库脚本只允许由部署人员对确认的新空库显式执行 | MySQL 初始化 | 停止操作并改用升级脚本 |
 | BR-004 | 日常应用发布不得停止或清理任何中间件 Compose project 和宿主机持久化目录 | 应用与基础设施 | 停止操作，避免基础设施中断或数据丢失 |
+| BR-005 | 每个应用必须使用 `app/<service>/` 独立目录、`.env` 和 `springblade-<service>` project | 应用部署 | 阻止使用全量聚合应用 Compose |
 
 ## 7. 认证与访问边界
 
 - GitHub Actions 仅通过仓库 `GITHUB_TOKEN` 推送 GHCR，不使用生产 Environment、SSH 密钥或远程部署变量。
 - 生产服务器由运维人员按需执行部署命令；私有 GHCR 镜像使用只读包权限登录。
-- MySQL、Redis、Nacos、Sentinel 默认绑定回环地址；Nacos Console 使用宿主机 `18080`，避免与网关调试端口 `8080` 冲突。
-- 中间件和业务微服务加入 `springblade-backend`；Nginx 与网关加入 `springblade-ingress`；仅网关同时加入两个网络。
-- 业务微服务不直接暴露宿主机端口，仅网关回环端口和入口 Nginx 对外提供访问。
+- 单机基础设施默认绑定回环地址；三机测试模式需要将上海中间件绑定到可白名单访问的地址，Nacos Console 使用宿主机 `18080`，避免与网关调试端口 `8080` 冲突。
+- 单机模式下中间件和业务微服务加入 `springblade-backend`；三机模式下 Docker bridge 只在本机生效，Gateway 与 Nginx 共用上海 `springblade-ingress`，其他应用通过公网地址和 Nacos 注册信息通信。
+- 三机模式只开放应用宿主机映射端口给必要来源；MySQL、Redis、Nacos、Nacos gRPC 和 Sentinel 不得对全网开放。
 - 审计、脱敏功能不涉及；不得采集或输出部署密钥和完整连接串。
 
 ## 8. 页面与交互要求
@@ -185,3 +197,5 @@ flowchart TD
 | 2026-09-17 | 0.3 | 完成真实服务器四个中间件部署并修正首次初始化缺陷 | 用户要求仅部署中间件 | MySQL、Redis、Nacos、Sentinel、教程和测试归档 | Codex |
 
 | 2026-09-18 | 0.4 | 按用户确认取消 Actions 自动发布，改为仅构建推送镜像并由运维人员手动拉取部署 | 用户明确不使用自动发布 | Actions、部署教程、测试范围和发布边界 | Codex |
+| 2026-09-18 | 0.5 | 应用部署改为每个服务独立目录与 Compose project，先提供 Gateway 最小部署 YAML | 用户要求按应用拆分并先检查 Gateway 配置 | App Compose、部署脚本、教程、设计与测试 | Codex |
+| 2026-09-20 | 0.6 | 按三服务器资源分配补齐六个独立应用 Compose、JVM限制、跨主机公网白名单和部署文档 | 用户要求根据评估记录生成三机部署文件，但暂不运行 | 六个应用 Compose、环境模板、三服务器部署文档、关联设计与测试 | Codex |
