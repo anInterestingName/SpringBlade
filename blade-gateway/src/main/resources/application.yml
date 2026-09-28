@@ -16,3 +16,8 @@ blade:
         - blade-gateway
         - blade-admin
         - blade-log
+
+# 临时诊断动态路由是否装配了 Path 谓词。
+logging:
+  level:
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: DEBUG
