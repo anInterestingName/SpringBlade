@@ -27,6 +27,7 @@ import org.springframework.cloud.gateway.route.Route;
 import org.springframework.cloud.loadbalancer.core.ReactorServiceInstanceLoadBalancer;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.core.Ordered;
+import org.springframework.http.server.PathContainer;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -36,6 +37,9 @@ import java.net.URI;
 import java.util.Set;
 
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_LOADBALANCER_RESPONSE_ATTR;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_PREDICATE_MATCHED_PATH_ATTR;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_PREDICATE_MATCHED_PATH_ROUTE_ID_ATTR;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_PREDICATE_PATH_CONTAINER_ATTR;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR;
 
@@ -68,12 +72,17 @@ public class LoadBalancerDiagnosticFilter implements GlobalFilter, Ordered {
 		String expectedServiceId = route == null ? null : route.getUri().getHost();
 		String requestId = exchange.getRequest().getId();
 		String forwardedPath = exchange.getRequest().getPath().value();
+		String matchedPath = exchange.getAttribute(GATEWAY_PREDICATE_MATCHED_PATH_ATTR);
+		String matchedPathRouteId = exchange.getAttribute(GATEWAY_PREDICATE_MATCHED_PATH_ROUTE_ID_ATTR);
+		PathContainer predicatePath = exchange.getAttribute(GATEWAY_PREDICATE_PATH_CONTAINER_ATTR);
 		return chain.filter(exchange).doFinally(signal -> logSelection(exchange, requestId, originalPath,
-			forwardedPath, route, loadBalancerUrl, expectedServiceId, signal));
+			forwardedPath, matchedPath, matchedPathRouteId, predicatePath, route, loadBalancerUrl,
+			expectedServiceId, signal));
 	}
 
 	private void logSelection(ServerWebExchange exchange, String requestId, String originalPath,
-		String forwardedPath, Route route, URI loadBalancerUrl, String expectedServiceId, SignalType signal) {
+		String forwardedPath, String matchedPath, String matchedPathRouteId, PathContainer predicatePath,
+		Route route, URI loadBalancerUrl, String expectedServiceId, SignalType signal) {
 		Response<ServiceInstance> selection = exchange.getAttribute(GATEWAY_LOADBALANCER_RESPONSE_ATTR);
 		ServiceInstance instance = selection != null && selection.hasServer() ? selection.getServer() : null;
 		URI finalUrl = exchange.getAttribute(GATEWAY_REQUEST_URL_ATTR);
@@ -88,10 +97,12 @@ public class LoadBalancerDiagnosticFilter implements GlobalFilter, Ordered {
 			}
 		}
 
-		log.info("lb-diagnostic requestId={} originalPath={} forwardedPath={} routeId={} expectedService={} " +
+		log.info("lb-diagnostic requestId={} originalPath={} forwardedPath={} predicatePath={} " +
+			"matchedPath={} matchedPathRouteId={} routeId={} expectedService={} " +
 			"lbUrlHost={} selectedService={} selectedHost={} selectedPort={} finalScheme={} finalHost={} finalPort={} " +
 			"loadBalancerBean={} status={} signal={}",
-			requestId, originalPath, forwardedPath, route == null ? null : route.getId(), expectedServiceId,
+			requestId, originalPath, forwardedPath, predicatePath, matchedPath, matchedPathRouteId,
+			route == null ? null : route.getId(), expectedServiceId,
 			loadBalancerUrl == null ? null : loadBalancerUrl.getHost(),
 			instance == null ? null : instance.getServiceId(), instance == null ? null : instance.getHost(),
 			instance == null ? null : instance.getPort(), finalUrl == null ? null : finalUrl.getScheme(),
