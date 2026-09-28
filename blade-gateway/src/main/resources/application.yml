@@ -6,6 +6,20 @@ springdoc:
   swagger-ui:
     # 去掉默认的 petstore 示例下拉项
     disable-swagger-default-url: true
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              # Nacos 配置刷新重绑定后仍须保留按服务名匹配的 Path 谓词。
+              predicates:
+                - name: Path
+                  args:
+                    pattern: "'/' + serviceId + '/**'"
+
 blade:
   swagger:
     discovery:
