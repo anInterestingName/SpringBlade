@@ -291,65 +291,7 @@ Sleuth/Zipkin 链路模型自 Boot 3 起已被 Micrometer Tracing 取代,`spring
 
 > 如需分布式链路追踪,改用 Micrometer Tracing(桥接 + OTLP/Zipkin 上报);此处为清理而非功能替换。
 
-### 5.5 Nacos 3.2.2 镜像与配置适配(`script/docker/nacos/`)
-
-> 2026-09-17 起，Docker 部署按 `script/docker/middleware`、`script/docker/app` 和 `script/docker/ingress` 分层。本节保留 Nacos 升级背景，实际部署以 [Docker Compose 与 GitHub Actions 部署教程](docker-compose-github-actions-deployment.md) 为准。
-
-nacos-client 由 blade-tool §11.1 **主动**锁定为 3.2.2(⚠️ 注:Spring Cloud Alibaba 2025.1.0.0 的 BOM 本身托管的是 nacos-client **3.1.1**,3.2.2 是通过 `alibaba.nacos.version` 显式覆盖的,并非 Cloud 2025.1 自带),服务端镜像同步 `v3.1.0 → v3.2.2`(§8 已列)。但**升级远不止改一个 tag**:Nacos 3.2.x 引入了 AI 控制面(MCP / Skill / AgentSpec),会显著改变开箱行为,需配套处理以下几处。
-
-#### ① 镜像 tag(`script/docker/middleware/nacos/compose.yml`)
-
-```yaml
-# 改前
-image: nacos/nacos-server:v3.1.0
-# 改后(与 nacos-client 3.2.2 对齐)
-image: nacos/nacos-server:v3.2.2
-```
-
-#### ② application.properties 必须替换为 3.2.2 官方版(`script/docker/nacos/conf/application.properties`)
-
-**背景**:该文件经 volume **整体替换**镜像内 `/home/nacos/conf/application.properties`。原挂载的是 **Nacos 2.x 风格**的精简配置(忽略路径还是 2.x 的 `/console-fe/`、缺 3.x 认证结构与 AI 开关),在 3.2.2 镜像上会丢失大量新默认值,并使 AI 模块按代码默认(开)运行。
-
-**改法**:从 v3.2.2 镜像导出官方默认文件作为新模板,再追加 AI 关闭配置:
-
-```bash
-# 从运行中的 3.2.2 容器导出官方默认 application.properties(319 行)
-docker exec <nacos容器> cat /home/nacos/conf/application.properties > application.properties
-```
-
-> 数据源与认证的环境变量名(`MYSQL_SERVICE_*` / `NACOS_AUTH_*`)在 3.2.2 官方默认文件里保持一致,compose 既有 env 无需改动。
-
-#### ③ 关闭 AI 发布流水线——否则控制台自动出现数千条配置(核心坑)
-
-**现象**:v3.2.2 镜像**自带** `skills-data.zip`(~7.6MB)+ `agentspec-data.zip`,由默认开启的 `nacos.plugin.ai-pipeline` / `skill-scanner` 在启动时解包灌入配置中心,控制台配置列表瞬间多出数千条。**这不是联网导入,而是镜像内置数据**;单机 Derby 下表现为「每次启动重新生成」,删容器重建也不消失。
-
-**关键**:3.2.2 镜像启动参数为 `--spring.config.additional-location=file:/home/nacos/conf/` + `--spring.config.name=application`,**只加载 `/home/nacos/conf/application.properties`**;2.x 的 `/home/nacos/init.d/custom.properties` 覆盖机制在该镜像已失效,挂了也不读。因此关闭开关必须写进 `application.properties`:
-
-```properties
-# 关闭 AI 发布流水线:阻止解包加载内置 skills-data.zip / agentspec-data.zip
-nacos.plugin.ai-pipeline.enabled=${NACOS_AI_PIPELINE_ENABLED:false}
-nacos.plugin.ai-pipeline.skill-scanner.enabled=${NACOS_AI_PIPELINE_SKILL_SCANNER_ENABLED:false}
-# 关闭 AI 模块总开关:隐藏控制台 AI 菜单及相关 API
-nacos.extension.ai.enabled=${NACOS_EXTENSION_AI_ENABLED:false}
-```
-
-> `nacos.plugin.ai.importer.mcp.official.*` 等联网导入器属性在该镜像默认文件里**并不存在**,真正的开关是上面的 `ai-pipeline` / `skill-scanner`;`nacos.istio.mcp.server.enabled` / `nacos.k8s.sync.enabled` 官方默认已是 `false`,无需重复。
-
-#### ④ 鉴权 token 必须填写(`NACOS_AUTH_TOKEN`)
-
-3.x 开启鉴权后,`NACOS_AUTH_TOKEN` 必须是 **Base64 编码、≥32 字节**的密钥,**空值会导致启动失败**。compose 模板保留空占位(供部署方自填),但**部署前必须填写**:
-
-```bash
-openssl rand -base64 32   # 生成合规密钥
-```
-
-#### ⑤ 数据持久化(推荐)
-
-当前 `script/docker/middleware` 已将 MySQL、Redis、Nacos、Sentinel 拆为四个独立 Compose project，使用 `nacos_config` MySQL Schema 和宿主机绑定目录持久化。应用发布不会重建这些中间件容器或目录。
-
-旧环境从 Derby 或宿主机目录迁移时，必须先备份并按 Nacos 官方迁移方式转换数据，不得直接删除旧目录或执行 `docker compose down -v`。完整首次部署、备份和已有环境迁移步骤见新的部署教程。
-
-### 5.6 Feign 接口统一 `/feign/client` 前缀 + 网关内部接口隔离
+### 5.5 Feign 接口统一 `/feign/client` 前缀 + 网关内部接口隔离
 
 **背景**:Provider 以 `@RestController implements IXxxClient` 实现 Feign 接口后,这些方法即成为真实 HTTP 端点——持有合法令牌的外部请求可像调用普通 Controller 一样直接访问服务间接口。为把 Feign 接口收敛为「仅供服务间调用」,做两件事:① 所有 Feign 接口统一 `/feign/client/<模块>` 路径前缀;② 网关对外拦截 `feign` 保留段。二者配合即闭环:服务间调用经注册中心直连、不过网关,不受影响;外部流量只能经网关,命中保留段即拒。
 
@@ -387,7 +329,7 @@ openssl rand -base64 32   # 生成合规密钥
 
 > **本方案以网关路径隔离为准**:全部 Feign 接口已统一落在 `feign` 保留段下,网关对外拦截即可挡住所有经网关的外部访问,无需在接口上额外加注解或做请求头处理。其防护边界在网关入口——绕过网关、直连微服务实例的调用不在拦截范围,故仍以「微服务只部署在内网、对外仅暴露网关」为前提。**因此凡是接受外部可控标识入参的 Feign 接口,服务侧仍必须自行做归属与租户校验,不可把网关拦截当作唯一防线**;若要覆盖「直连微服务」场景的纵深防御,可另行在服务侧增加内部标记校验。
 
-### 5.7 Nacos 动态刷新排除基础设施 Bean
+### 5.6 Nacos 动态刷新排除基础设施 Bean
 
 Spring Cloud 5.0.2 收到 Nacos 配置变更后会重绑已登记的 `@ConfigurationProperties` Bean。Druid Boot 4 的 `DruidDataSourceWrapper` 也在该集合中,重绑过程会销毁连接池并把属性重置为默认值,可能与 Druid 创建连接线程并发,表现为 `driver is null`；Spring Boot Admin 的 `InstanceDiscoveryListener` 则会因没有无参构造器产生重置告警。
 
@@ -449,16 +391,10 @@ cd SpringBlade && mvn clean install -DskipTests -Dmaven.test.skip=true -Ddocker.
 | 安全 | blade-gateway AuthProvider | 新增放行 /swagger-ui/**、/swagger-ui.html(/v3/api-docs/** 原已放行,仅移位) |
 | 数据 | doc/sql blade_menu 接口文档菜单 | http://localhost/doc.html → http://localhost/swagger-ui.html |
 | 环境 | 根 pom `java.version` + README | 17 → 21(**构建需 JDK 21**) |
-| 部署 | 9 个 `Dockerfile` 基础镜像(blade-auth、blade-gateway、blade-ops×4、blade-service×3) | `bladex/alpine-java:openjdk17_cn_slim` → `openjdk21_cn_slim`(与 JDK 21 对齐;blade-auth 另含注释的阿里云备用镜像行 `openjdk17_cn_slim` 同步改 21) |
 | 文档 | CLAUDE.md 开发规范 | 同步刷新:文档栈 Knife4j→springdoc、Controller 约定去 @ApiOperationSupport、去 OkHttp 提法、JDK/Java 17→21 |
 | 插件 | 根 pom maven-compiler / flatten | 3.11.0→3.15.0 / 1.3.0→1.7.3 |
-| 部署 | `script/docker/middleware/nacos/compose.yml` nacos-server 镜像 | `v3.1.0` → `v3.2.2`(与 nacos-client 3.2.2 对齐,详见 §5.5) |
-| 配置 | `script/docker/nacos/conf/application.properties` | 2.x 精简模板 → 3.2.2 官方默认 + AI 关闭配置(§5.5②③) |
-| 配置 | 同上 AI 开关 | 新增 `nacos.plugin.ai-pipeline.enabled` / `skill-scanner.enabled` / `nacos.extension.ai.enabled` = false,消除数千条内置 AI 配置(§5.5③) |
-| 部署 | `script/docker/middleware/*/compose.yml` 持久化 | MySQL、Redis、Nacos数据与日志使用各自宿主机绑定目录，配置只读挂载(§5.5⑤) |
-| 部署 | `script/docker/deploy.sh` | 改为 `infra`、`app`、`ingress` 独立 project 调度入口 |
-| 业务 | 全部 Feign 接口 `IXxxClient`(7 个,`IApiScopeClient` 已合规免改)+ seata `StorageController` | `API_PREFIX` 统一为 `/feign/client/<模块>`,Provider 映射随常量同步(§5.6①) |
-| 新增 | blade-gateway `provider/RequestProvider.java` + `filter/InnerFilter.java` | 网关对外拦截含 `feign` 保留段的请求、返回 403;判定只认首段 `feign`,采用「解码 + 逐段精确比对」对齐容器归一化,杜绝 `//`、`/./`、`;params`、`%编码` 变形绕过(§5.6②) |
+| 业务 | 全部 Feign 接口 `IXxxClient`(7 个,`IApiScopeClient` 已合规免改)+ seata `StorageController` | `API_PREFIX` 统一为 `/feign/client/<模块>`,Provider 映射随常量同步(§5.5①) |
+| 新增 | blade-gateway `provider/RequestProvider.java` + `filter/InnerFilter.java` | 网关对外拦截含 `feign` 保留段的请求、返回 403;判定只认首段 `feign`,采用「解码 + 逐段精确比对」对齐容器归一化,杜绝 `//`、`/./`、`;params`、`%编码` 变形绕过(§5.5②) |
 
 ---
 

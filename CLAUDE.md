@@ -313,7 +313,7 @@ Entity 基类的选择**直接决定** Service 和 ServiceImpl 的继承方式�
 
 ---
 
-## 11. 构建与部署
+## 11. 构建与配置
 
 ### 11.1 Maven 构建
 
@@ -333,13 +333,7 @@ mvn clean package -DskipTests -pl blade-service/blade-system -am  # 只打包 sy
 - 数据源、密钥、Swagger、Sentinel、Feign 等共享参数统一在 Nacos 配置
 - 各服务 `src/main/resources/application-{env}.yml` 仅保留 `server.port` 与 `spring.datasource.url` 等少量本地覆盖
 
-### 11.3 Docker 部署
-
-- `script/docker/docker-compose.yml` 提供一体化编排：Nacos + Sentinel + Redis + Nginx + 全部微服务
-- 默认网段 `blade_net`，Nacos `172.30.0.48`，Sentinel `172.30.0.58`
-- Harbor 镜像推送通过父 POM 的 `docker.registry.url` 属性控制
-
-### 11.4 必备环境变量
+### 11.3 必备环境变量
 
 ```bash
 BLADE_OAUTH2_PUBLIC_KEY    # SM2 公钥
@@ -348,7 +342,7 @@ BLADE_TOKEN_SIGN_KEY       # JWT 签名密钥
 BLADE_TOKEN_CRYPTO_KEY     # Token AES 加密密钥
 ```
 
-### 11.5 服务端口（默认）
+### 11.4 服务端口（默认）
 
 | 服务 | 端口 |
 | --- | --- |
