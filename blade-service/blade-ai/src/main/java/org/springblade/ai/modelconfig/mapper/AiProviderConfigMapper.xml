@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.springblade.ai.modelconfig.mapper.AiProviderConfigMapper">
+
+    <select id="selectProviderPage" resultType="org.springblade.ai.modelconfig.vo.ProviderListVO">
+        SELECT
+            id,
+            provider_code,
+            provider_name,
+            preset_dict_id,
+            base_url,
+            tenant_id,
+            owner_user_id,
+            status,
+            (CASE WHEN api_key_value IS NOT NULL AND TRIM(api_key_value) != '' THEN TRUE ELSE FALSE END) AS credential_configured,
+            lock_version,
+            update_time
+        FROM blade_ai_provider_config
+        WHERE is_deleted = 0
+        <if test="param.tenantId != null and param.tenantId != ''">
+            AND tenant_id = #{param.tenantId}
+        </if>
+        <if test="param.ownerUserId != null">
+            AND owner_user_id = #{param.ownerUserId}
+        </if>
+        <if test="param.providerCode != null and param.providerCode != ''">
+            AND provider_code LIKE CONCAT('%', #{param.providerCode}, '%')
+        </if>
+        <if test="param.providerName != null and param.providerName != ''">
+            AND provider_name LIKE CONCAT('%', #{param.providerName}, '%')
+        </if>
+        <if test="param.status != null">
+            AND status = #{param.status}
+        </if>
+        ORDER BY update_time DESC, id DESC
+    </select>
+
+    <select id="selectProviderById" resultType="org.springblade.ai.modelconfig.entity.AiProviderConfig">
+        SELECT *
+        FROM blade_ai_provider_config
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </select>
+
+    <select id="selectProviderByIdForUpdate" resultType="org.springblade.ai.modelconfig.entity.AiProviderConfig">
+        SELECT *
+        FROM blade_ai_provider_config
+        WHERE id = #{id}
+          AND is_deleted = 0
+        FOR UPDATE
+    </select>
+
+</mapper>

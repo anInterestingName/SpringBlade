@@ -92,7 +92,7 @@ public interface LauncherConstant {
 	 * @return 用户名
 	 */
 	static String nacosUsername() {
-		return configurableValue("blade.nacos.username", "BLADE_NACOS_USERNAME", "");
+		return configurableValue("blade.nacos.username", "BLADE_NACOS_USERNAME", "nacos");
 	}
 
 	/**
@@ -101,7 +101,7 @@ public interface LauncherConstant {
 	 * @return 密码
 	 */
 	static String nacosPassword() {
-		return configurableValue("blade.nacos.password", "BLADE_NACOS_PASSWORD", "");
+		return configurableValue("blade.nacos.password", "BLADE_NACOS_PASSWORD", "123456");
 	}
 
 	/**

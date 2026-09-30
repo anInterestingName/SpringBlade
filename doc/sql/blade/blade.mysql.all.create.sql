@@ -155,6 +155,30 @@ BEGIN;
 INSERT INTO `blade_dict` (`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES (1123598814738675201, 0, 'sex', -1, '性别', 1, NULL, 0), (1123598814738675202, 1123598814738675201, 'sex', 1, '男', 1, NULL, 0), (1123598814738675203, 1123598814738675201, 'sex', 2, '女', 2, NULL, 0), (1123598814738675204, 0, 'notice', -1, '通知类型', 2, NULL, 0), (1123598814738675205, 1123598814738675204, 'notice', 1, '发布通知', 1, NULL, 0), (1123598814738675206, 1123598814738675204, 'notice', 2, '批转通知', 2, NULL, 0), (1123598814738675207, 1123598814738675204, 'notice', 3, '转发通知', 3, NULL, 0), (1123598814738675208, 1123598814738675204, 'notice', 4, '指示通知', 4, NULL, 0), (1123598814738675209, 1123598814738675204, 'notice', 5, '任免通知', 5, NULL, 0), (1123598814738675210, 1123598814738675204, 'notice', 6, '事务通知', 6, NULL, 0), (1123598814738675211, 0, 'menu_category', -1, '菜单类型', 3, NULL, 0), (1123598814738675212, 1123598814738675211, 'menu_category', 1, '菜单', 1, NULL, 0), (1123598814738675213, 1123598814738675211, 'menu_category', 2, '按钮', 2, NULL, 0), (1123598814738675214, 0, 'button_func', -1, '按钮功能', 4, NULL, 0), (1123598814738675215, 1123598814738675214, 'button_func', 1, '工具栏', 1, NULL, 0), (1123598814738675216, 1123598814738675214, 'button_func', 2, '操作栏', 2, NULL, 0), (1123598814738675217, 1123598814738675214, 'button_func', 3, '工具操作栏', 3, NULL, 0), (1123598814738675218, 0, 'yes_no', -1, '是否', 5, NULL, 0), (1123598814738675219, 1123598814738675218, 'yes_no', 1, '否', 1, NULL, 0), (1123598814738675220, 1123598814738675218, 'yes_no', 2, '是', 2, NULL, 0), (1123598814738675231, 0, 'data_scope_type', -1, '数据权限', 8, NULL, 0), (1123598814738675232, 1123598814738675231, 'data_scope_type', 1, '全部可见', 1, NULL, 0), (1123598814738675233, 1123598814738675231, 'data_scope_type', 2, '本人可见', 2, NULL, 0), (1123598814738675234, 1123598814738675231, 'data_scope_type', 3, '所在机构可见', 3, NULL, 0), (1123598814738675235, 1123598814738675231, 'data_scope_type', 4, '所在机构及子级可见', 4, NULL, 0), (1123598814738675236, 1123598814738675231, 'data_scope_type', 5, '自定义', 5, NULL, 0), (1123598814738675237, 0, 'api_scope_type', -1, '接口权限', 10, NULL, 0), (1123598814738675238, 1123598814738675237, 'api_scope_type', 1, '系统接口', 1, NULL, 0), (1123598814738675239, 1123598814738675237, 'api_scope_type', 2, '业务接口', 2, NULL, 0), (1123598814738777220, 0, 'post_category', -1, '岗位类型', 12, NULL, 0), (1123598814738777221, 1123598814738777220, 'post_category', 1, '高层', 1, NULL, 0), (1123598814738777222, 1123598814738777220, 'post_category', 2, '中层', 2, NULL, 0), (1123598814738777223, 1123598814738777220, 'post_category', 3, '基层', 3, NULL, 0), (1123598814738777224, 1123598814738777220, 'post_category', 4, '其他', 4, NULL, 0), (1123598814738777230, 0, 'region', -1, '行政区划', 13, NULL, 0), (1123598814738777231, 1123598814738777230, 'region', 0, '国家', 0, NULL, 0), (1123598814738777232, 1123598814738777230, 'region', 1, '省份/直辖市', 1, NULL, 0), (1123598814738777233, 1123598814738777230, 'region', 2, '地市', 2, NULL, 0), (1123598814738777234, 1123598814738777230, 'region', 3, '区县', 3, NULL, 0), (1123598814738777235, 1123598814738777230, 'region', 4, '乡镇', 4, NULL, 0), (1123598814738777236, 1123598814738777230, 'region', 5, '村委', 5, NULL, 0);
 COMMIT;
 
+INSERT INTO `blade_dict` (`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES
+(220260930000000001, 0, 'ai_model_api_protocol', -1, '大模型API协议', 1, '大模型API协议类型', 0),
+(220260930000000002, 220260930000000001, 'ai_model_api_protocol', 1, 'openai-completions', 1, 'OpenAI Chat Completions 兼容协议', 0),
+(220260930000000003, 220260930000000001, 'ai_model_api_protocol', 2, 'openai-responses', 2, 'OpenAI Responses 协议', 0),
+(220260930000000004, 220260930000000001, 'ai_model_api_protocol', 3, 'anthropic-messages', 3, 'Anthropic Messages 协议', 0),
+(220260930000000010, 0, 'ai_model_capability', -1, '大模型能力类型', 2, '大模型主要能力类型与输入模态', 0),
+(220260930000000011, 220260930000000010, 'ai_model_capability', 1, 'text', 1, '文本能力', 0),
+(220260930000000012, 220260930000000010, 'ai_model_capability', 2, 'image', 2, '图像能力', 0),
+(220260930000000013, 220260930000000010, 'ai_model_capability', 3, 'video', 3, '视频能力', 0),
+(220260930000000020, 0, 'ai_provider_preset', -1, '大模型供应商预设', 3, '大模型供应商预设清单', 0),
+(220260930000000021, 220260930000000020, 'ai_provider_preset', 1, 'OpenAI', 1, 'OpenAI 官方', 0),
+(220260930000000022, 220260930000000020, 'ai_provider_preset', 2, 'Anthropic', 2, 'Anthropic Claude', 0),
+(220260930000000023, 220260930000000020, 'ai_provider_preset', 3, 'Google Gemini', 3, 'Google Gemini', 0),
+(220260930000000024, 220260930000000020, 'ai_provider_preset', 4, 'Microsoft Azure OpenAI', 4, 'Azure OpenAI 服务', 0),
+(220260930000000025, 220260930000000020, 'ai_provider_preset', 5, '阿里云百炼', 5, '阿里云百炼 / 通义千问', 0),
+(220260930000000026, 220260930000000020, 'ai_provider_preset', 6, 'DeepSeek', 6, '深度求索 DeepSeek', 0),
+(220260930000000027, 220260930000000020, 'ai_provider_preset', 7, '百度千帆', 7, '百度智能云千帆大模型平台', 0),
+(220260930000000028, 220260930000000020, 'ai_provider_preset', 8, '腾讯混元', 8, '腾讯混元大模型', 0),
+(220260930000000029, 220260930000000020, 'ai_provider_preset', 9, '智谱 GLM', 9, '智谱 BigModel', 0),
+(220260930000000030, 220260930000000020, 'ai_provider_preset', 10, 'Moonshot', 10, '月之暗面 Kimi', 0),
+(220260930000000031, 220260930000000020, 'ai_provider_preset', 11, '火山方舟', 11, '字节跳动火山方舟', 0),
+(220260930000000032, 220260930000000020, 'ai_provider_preset', 12, 'xAI', 12, 'xAI Grok', 0),
+(220260930000000033, 220260930000000020, 'ai_provider_preset', 13, 'Mistral', 13, 'Mistral AI', 0);
+
 -- ----------------------------
 -- Table structure for blade_log_api
 -- ----------------------------
@@ -347,6 +371,18 @@ VALUES
    '/asset/prompt/reverse', 'picture', 10, 2, 1, 1, '图片提示词反推入口', 0),
   (220260917100000002, 220260909100000002, 'prompt_system_manage', '系统策略', 'prompt_system_manage',
    '/asset/prompt/system-manage', 'setting', 11, 2, 3, 1, '系统提示词策略管理权限', 0);
+
+INSERT INTO blade_menu
+  (id, parent_id, code, name, alias, path, source, sort, category, `action`, is_open, remark, is_deleted)
+VALUES
+  (220260930200000001, 220260909100000001, 'ai_provider', '供应商配置', 'menu',
+   '/asset/ai-provider', 'iconfont iconicon_savememo', 2, 1, 0, 1, '模型配置首期只读菜单', 0),
+  (220260930200000002, 220260930200000001, 'ai_provider_view', '查看', 'view',
+   '/asset/ai-provider/view', 'file-text', 1, 2, 2, 1, '供应商配置查看权限', 0),
+  (220260930200000003, 220260909100000001, 'ai_model', '模型配置', 'menu',
+   '/asset/ai-model', 'iconfont iconicon_doc', 3, 1, 0, 1, '模型配置首期只读菜单', 0),
+  (220260930200000004, 220260930200000003, 'ai_model_view', '查看', 'view',
+   '/asset/ai-model/view', 'file-text', 1, 2, 2, 1, '模型配置查看权限', 0);
 
 COMMIT;
 
@@ -543,7 +579,11 @@ INSERT INTO blade_role_menu (id, menu_id, role_id) VALUES
   (220260909200000010, 220260909100000010, 1123598816738675201),
   (220260909200000011, 220260909100000011, 1123598816738675201),
   (220260917200000001, 220260917100000001, 1123598816738675201),
-  (220260917200000002, 220260917100000002, 1123598816738675201);
+  (220260917200000002, 220260917100000002, 1123598816738675201),
+  (220260930300000002, 220260930200000001, 1123598816738675201),
+  (220260930300000003, 220260930200000002, 1123598816738675201),
+  (220260930300000004, 220260930200000003, 1123598816738675201),
+  (220260930300000005, 220260930200000004, 1123598816738675201);
 COMMIT;
 
 -- ----------------------------
@@ -944,6 +984,76 @@ INSERT INTO blade_scope_api (id, menu_id, resource_code, scope_name, scope_path,
 (220260910000000008, 220260910100000001, 'system:tag:edit', '标签编辑', '/blade-system/tag/update', 2, '编辑标签和调整层级', 1, 0),
 (220260910000000009, 220260910100000001, 'system:tag:status', '标签状态', '/blade-system/tag/status', 2, '启用或停用标签', 1, 0),
 (220260910000000010, 220260910100000001, 'system:tag:delete', '标签删除', '/blade-system/tag/remove', 2, '删除叶子标签', 1, 0),
-(220260917000000003, NULL, 'system:tag:runtime', '标签运行时读取', '/feign/client/tag-runtime/taxonomy', 2, '内部服务读取当前租户有效标签体系', 1, 0);
+(220260917000000003, NULL, 'system:tag:runtime', '标签运行时读取', '/feign/client/tag-runtime/taxonomy', 2, '内部服务读取当前租户有效标签体系', 1, 0),
+(220260930100000001, 220260930200000001, 'ai:model:provider:view', '供应商配置查看', '/blade-ai/ai/provider/**', 2, '供应商配置列表与详情', 1, 0),
+(220260930100000002, NULL, 'ai:model:provider:create', '供应商配置新增', '/blade-ai/ai/provider/create', 2, '创建供应商配置', 1, 0),
+(220260930100000003, NULL, 'ai:model:provider:edit', '供应商配置编辑', '/blade-ai/ai/provider/update', 2, '更新供应商配置与启停状态', 1, 0),
+(220260930100000004, NULL, 'ai:model:provider:delete', '供应商配置删除', '/blade-ai/ai/provider/remove', 2, '删除供应商配置', 1, 0),
+(220260930100000005, 220260930200000003, 'ai:model:config:view', '模型配置查看', '/blade-ai/ai/model/**', 2, '模型配置列表与详情', 1, 0),
+(220260930100000006, NULL, 'ai:model:config:create', '模型配置新增', '/blade-ai/ai/model/create', 2, '创建模型配置', 1, 0),
+(220260930100000007, NULL, 'ai:model:config:edit', '模型配置编辑', '/blade-ai/ai/model/update', 2, '更新模型配置与启停状态', 1, 0),
+(220260930100000008, NULL, 'ai:model:config:delete', '模型配置删除', '/blade-ai/ai/model/remove', 2, '删除模型配置', 1, 0),
+(220260930100000009, NULL, 'ai:model:runtime:read', '模型运行时读取', '/feign/client/ai-model-config/v1/runtime', 2, '任务服务内部读取运行配置与凭据', 1, 0);
+
+INSERT INTO blade_role_scope (id, scope_category, scope_id, role_id) VALUES
+  (220260930400000001, 2, 220260930100000001, 1123598816738675201),
+  (220260930400000002, 2, 220260930100000005, 1123598816738675201);
+
+-- Table structure for blade_ai_provider_config
+DROP TABLE IF EXISTS `blade_ai_provider_config`;
+CREATE TABLE `blade_ai_provider_config` (
+  `id` bigint NOT NULL COMMENT '主键',
+  `provider_code` varchar(64) NOT NULL COMMENT '所有人范围内的供应商管理编码',
+  `provider_name` varchar(100) NOT NULL COMMENT '供应商显示名称快照',
+  `preset_dict_id` bigint NULL DEFAULT NULL COMMENT '供应商预设字典项ID',
+  `base_url` varchar(1024) NOT NULL COMMENT '接入根地址',
+  `api_key_value` text NULL COMMENT '用户提供的接入凭据',
+  `owner_user_id` bigint NOT NULL COMMENT '配置所有人',
+  `lock_version` bigint NOT NULL DEFAULT 0 COMMENT '并发控制版本',
+  `status` int NOT NULL DEFAULT 0 COMMENT '0停用 1启用',
+  `tenant_id` varchar(12) NOT NULL DEFAULT '000000' COMMENT '租户ID',
+  `create_user` bigint NULL DEFAULT NULL COMMENT '实际创建人',
+  `create_dept` bigint NULL DEFAULT NULL COMMENT '创建部门',
+  `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
+  `update_user` bigint NULL DEFAULT NULL COMMENT '最近修改人',
+  `update_time` datetime NULL DEFAULT NULL COMMENT '最近修改时间',
+  `is_deleted` int NOT NULL DEFAULT 0 COMMENT '是否已删除',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_blade_ai_provider_owner_code` (`tenant_id`, `owner_user_id`, `provider_code`),
+  KEY `idx_blade_ai_provider_owner_list` (`tenant_id`, `owner_user_id`, `is_deleted`, `update_time`, `id`),
+  KEY `idx_blade_ai_provider_tenant_list` (`tenant_id`, `is_deleted`, `update_time`, `id`),
+  KEY `idx_blade_ai_provider_global_list` (`is_deleted`, `update_time`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户大模型供应商接入配置';
+
+-- Table structure for blade_ai_model_config
+DROP TABLE IF EXISTS `blade_ai_model_config`;
+CREATE TABLE `blade_ai_model_config` (
+  `id` bigint NOT NULL COMMENT '主键',
+  `provider_id` bigint NOT NULL COMMENT '所属供应商配置ID',
+  `model_code` varchar(64) NOT NULL COMMENT '所有人范围内的模型管理编码',
+  `model_name` varchar(100) NOT NULL COMMENT '模型显示名称',
+  `upstream_model_id` varchar(128) NOT NULL COMMENT '上游模型标识',
+  `api_protocol` varchar(32) NOT NULL COMMENT '模型API协议稳定标识',
+  `capability_type` varchar(16) NOT NULL COMMENT '模型主要能力类型',
+  `context_window` int NULL DEFAULT NULL COMMENT '上下文窗口',
+  `input_types` text NOT NULL COMMENT '单模型输入模态JSON数组',
+  `reasoning_efforts` text NULL COMMENT '单模型推理档位JSON对象',
+  `owner_user_id` bigint NOT NULL COMMENT '配置所有人',
+  `lock_version` bigint NOT NULL DEFAULT 0 COMMENT '并发控制版本',
+  `status` int NOT NULL DEFAULT 0 COMMENT '0停用 1启用',
+  `tenant_id` varchar(12) NOT NULL DEFAULT '000000' COMMENT '租户ID',
+  `create_user` bigint NULL DEFAULT NULL COMMENT '实际创建人',
+  `create_dept` bigint NULL DEFAULT NULL COMMENT '创建部门',
+  `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
+  `update_user` bigint NULL DEFAULT NULL COMMENT '最近修改人',
+  `update_time` datetime NULL DEFAULT NULL COMMENT '最近修改时间',
+  `is_deleted` int NOT NULL DEFAULT 0 COMMENT '是否已删除',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_blade_ai_model_owner_code` (`tenant_id`, `owner_user_id`, `model_code`),
+  KEY `idx_blade_ai_model_provider` (`tenant_id`, `provider_id`, `is_deleted`, `id`),
+  KEY `idx_blade_ai_model_owner_list` (`tenant_id`, `owner_user_id`, `is_deleted`, `update_time`, `id`),
+  KEY `idx_blade_ai_model_tenant_list` (`tenant_id`, `is_deleted`, `update_time`, `id`),
+  KEY `idx_blade_ai_model_global_list` (`is_deleted`, `update_time`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户大模型配置';
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -19,6 +19,7 @@ package org.springblade.system.feign;
 import org.springblade.core.launch.constant.AppConstant;
 import org.springblade.core.tool.api.R;
 import org.springblade.system.entity.Dict;
+import org.springblade.system.vo.DictOptionVO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -56,5 +57,14 @@ public interface IDictClient {
 	 */
 	@GetMapping(API_PREFIX + "/getList")
 	R<List<Dict>> getList(@RequestParam("code") String code);
+
+	/**
+	 * 获取字典有效选项集合（含主键ID与稳定值）
+	 *
+	 * @param code 字典编号
+	 * @return
+	 */
+	@GetMapping(API_PREFIX + "/options")
+	R<List<DictOptionVO>> getOptions(@RequestParam("code") String code);
 
 }

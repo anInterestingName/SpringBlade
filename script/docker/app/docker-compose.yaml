@@ -41,7 +41,7 @@ services:
     <<: *blade-service
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-gateway:${IMAGE_TAG}
     ports:
-      - ${GATEWAY_BIND_ADDRESS:-127.0.0.1}:${GATEWAY_PORT:-8080}:80
+      - ${GATEWAY_BIND_ADDRESS:-0.0.0.0}:${GATEWAY_PORT:-8080}:80
     expose:
       - "80"
 

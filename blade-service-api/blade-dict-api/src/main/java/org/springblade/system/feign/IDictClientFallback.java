@@ -17,6 +17,7 @@ package org.springblade.system.feign;
 
 import org.springblade.core.tool.api.R;
 import org.springblade.system.entity.Dict;
+import org.springblade.system.vo.DictOptionVO;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -36,5 +37,10 @@ public class IDictClientFallback implements IDictClient {
 	@Override
 	public R<List<Dict>> getList(String code) {
 		return R.fail("获取数据失败");
+	}
+
+	@Override
+	public R<List<DictOptionVO>> getOptions(String code) {
+		return R.fail("获取字典选项失败");
 	}
 }

@@ -22,10 +22,10 @@ case "$STACK" in
 	infra)
 		ensure_network
 		case "$ACTION" in
-			up) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/compose.yml" up -d ;;
-			down) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/compose.yml" down ;;
-			pull) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/compose.yml" pull ;;
-			config) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/compose.yml" config --quiet ;;
+			up) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/docker-compose.yaml" up -d ;;
+			down) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/docker-compose.yaml" down ;;
+			pull) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/docker-compose.yaml" pull ;;
+			config) docker compose -p springblade-infra --env-file "$SCRIPT_DIR/infra/.env" -f "$SCRIPT_DIR/infra/docker-compose.yaml" config --quiet ;;
 			*) usage ;;
 		esac
 		;;
@@ -35,10 +35,10 @@ case "$STACK" in
 			(cd "$SCRIPT_DIR/app" && sh deploy.sh "${3:-}")
 		else
 			case "$ACTION" in
-				up) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/compose.yml" up -d ;;
-				down) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/compose.yml" down ;;
-				pull) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/compose.yml" pull ;;
-				config) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/compose.yml" config --quiet ;;
+				up) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/docker-compose.yaml" up -d ;;
+				down) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/docker-compose.yaml" down ;;
+				pull) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/docker-compose.yaml" pull ;;
+				config) docker compose -p springblade-app --env-file "$SCRIPT_DIR/app/.env" -f "$SCRIPT_DIR/app/docker-compose.yaml" config --quiet ;;
 				*) usage ;;
 			esac
 		fi
@@ -46,10 +46,10 @@ case "$STACK" in
 	ingress)
 		ensure_network
 		case "$ACTION" in
-			up) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/compose.yml" up -d ;;
-			down) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/compose.yml" down ;;
-			pull) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/compose.yml" pull ;;
-			config) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/compose.yml" config --quiet ;;
+			up) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/docker-compose.yaml" up -d ;;
+			down) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/docker-compose.yaml" down ;;
+			pull) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/docker-compose.yaml" pull ;;
+			config) docker compose -p springblade-ingress --env-file "$SCRIPT_DIR/ingress/.env" -f "$SCRIPT_DIR/ingress/docker-compose.yaml" config --quiet ;;
 			*) usage ;;
 		esac
 		;;

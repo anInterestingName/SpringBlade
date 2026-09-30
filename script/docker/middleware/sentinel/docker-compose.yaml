@@ -5,7 +5,7 @@ services:
     environment:
       TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - ${SENTINEL_BIND_ADDRESS:-127.0.0.1}:${SENTINEL_PORT:-8858}:8858
+      - ${SENTINEL_BIND_ADDRESS:-0.0.0.0}:${SENTINEL_PORT:-8858}:8858
     networks:
       springblade-backend:
         aliases:

@@ -19,6 +19,8 @@ import org.springblade.core.tool.api.R;
 import org.springblade.system.user.dto.UserRegisterCommand;
 import org.springblade.system.user.entity.UserInfo;
 import org.springblade.system.user.entity.UserOauth;
+import org.springblade.system.user.vo.UserManagementScopeVO;
+import org.springblade.system.user.vo.UserOwnerScopeVO;
 import org.springframework.stereotype.Component;
 
 /**
@@ -47,6 +49,16 @@ public class IUserClientFallback implements IUserClient {
 	@Override
 	public R<Boolean> register(UserRegisterCommand command) {
 		return R.fail("用户注册服务不可用");
+	}
+
+	@Override
+	public R<UserOwnerScopeVO> ownerScope(Long userId) {
+		return R.fail("用户服务不可用");
+	}
+
+	@Override
+	public R<UserManagementScopeVO> managementScope() {
+		return R.fail("用户管理范围校验服务不可用");
 	}
 
 }

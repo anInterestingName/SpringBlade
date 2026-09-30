@@ -28,10 +28,13 @@ import org.springblade.core.tool.utils.StringPool;
 import org.springblade.system.entity.Dict;
 import org.springblade.system.mapper.DictMapper;
 import org.springblade.system.service.IDictService;
+import org.springblade.system.vo.DictOptionVO;
 import org.springblade.system.vo.DictVO;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 服务实现类
@@ -59,6 +62,33 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements ID
 	@Override
 	public List<Dict> getList(String code) {
 		return baseMapper.getList(code);
+	}
+
+	@Override
+	public List<DictOptionVO> getOptions(String code) {
+		if (Func.isEmpty(code)) {
+			return Collections.emptyList();
+		}
+		// 查询当前字典分类下 dict_key != -1（排除根节点）且未逻辑删除的有效子项
+		List<Dict> list = list(Wrappers.<Dict>query().lambda()
+			.eq(Dict::getCode, code)
+			.ne(Dict::getDictKey, -1)
+			.eq(Dict::getIsDeleted, 0)
+			.orderByAsc(Dict::getSort)
+			.orderByAsc(Dict::getId));
+		if (Func.isEmpty(list)) {
+			return Collections.emptyList();
+		}
+		return list.stream().map(dict -> {
+			DictOptionVO vo = new DictOptionVO();
+			vo.setId(dict.getId());
+			vo.setCode(dict.getCode());
+			vo.setDictKey(dict.getDictKey());
+			vo.setDictValue(dict.getDictValue());
+			vo.setSort(dict.getSort());
+			vo.setIsDeleted(dict.getIsDeleted());
+			return vo;
+		}).collect(Collectors.toList());
 	}
 
 	@Override

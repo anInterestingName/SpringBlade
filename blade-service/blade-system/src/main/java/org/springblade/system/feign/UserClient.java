@@ -25,6 +25,8 @@ import org.springblade.system.user.dto.UserRegisterCommand;
 import org.springblade.system.user.entity.UserInfo;
 import org.springblade.system.user.entity.UserOauth;
 import org.springblade.system.user.feign.IUserClient;
+import org.springblade.system.user.vo.UserManagementScopeVO;
+import org.springblade.system.user.vo.UserOwnerScopeVO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -69,6 +71,26 @@ public class UserClient implements IUserClient {
 			}
 			return R.fail(RegisterResultCode.REGISTER_FAILED);
 		}
+	}
+
+	@Override
+	@GetMapping(API_PREFIX + "/owner-scope")
+	public R<UserOwnerScopeVO> ownerScope(Long userId) {
+		UserOwnerScopeVO vo = service.getOwnerScope(userId);
+		if (vo == null) {
+			return R.fail("目标用户不存在");
+		}
+		return R.data(vo);
+	}
+
+	@Override
+	@GetMapping(API_PREFIX + "/management-scope")
+	public R<UserManagementScopeVO> managementScope() {
+		UserManagementScopeVO vo = service.getManagementScope();
+		if (vo == null) {
+			return R.fail("未获取到当前有效用户范围");
+		}
+		return R.data(vo);
 	}
 
 }

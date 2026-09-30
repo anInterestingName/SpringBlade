@@ -17,6 +17,8 @@
 </p>  
 
 ## SpringBlade微服务开发平台
+前后端容器部署步骤见[部署教程](doc/guide/前后端容器部署教程.md)。
+
 * 采用前后端分离的模式，前端架构 [Saber](https://gitee.com/smallc/Saber) (基于 Vue3、Element-Plus)
 * 后端采用SpringCloud全家桶，并同时对其基础组件做了高度的封装，单独开源出一个框架：[BladeTool](https://gitee.com/smallc/blade-tool)
 * [BladeTool](https://github.com/chillzhuang/blade-tool)已推送至Maven中央库，直接引入即可，减少了工程的臃肿，也可更注重于业务开发

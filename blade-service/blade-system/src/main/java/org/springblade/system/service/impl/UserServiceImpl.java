@@ -30,8 +30,11 @@ import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.redis.cache.BladeRedis;
+import org.springblade.core.secure.BladeUser;
+import org.springblade.core.secure.utils.AuthUtil;
 import org.springblade.core.secure.utils.SecureUtil;
 import org.springblade.core.tenant.TenantGuard;
+import org.springblade.core.tenant.TenantUtil;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.constant.BladeConstant;
 import org.springblade.core.tool.utils.*;
@@ -43,6 +46,8 @@ import org.springblade.system.user.entity.UserInfo;
 import org.springblade.system.user.entity.UserOauth;
 import org.springblade.system.user.constant.RegisterResultCode;
 import org.springblade.system.user.dto.UserRegisterCommand;
+import org.springblade.system.user.vo.UserManagementScopeVO;
+import org.springblade.system.user.vo.UserOwnerScopeVO;
 import org.springblade.system.user.vo.UserVO;
 import org.springblade.system.excel.UserExcel;
 import org.springblade.system.mapper.UserMapper;
@@ -401,6 +406,80 @@ public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implement
 			// 用户已在本地事务中保存成功，缓存异常由后续查询回源刷新。
 		}
 		return true;
+	}
+
+	@Override
+	public UserOwnerScopeVO getOwnerScope(Long userId) {
+		if (userId == null) {
+			return null;
+		}
+		// 用户归属校验可能由平台超管跨租户发起，使用 ignore 避免当前上下文租户拦截
+		return TenantUtil.ignore(() -> {
+			User user = baseMapper.selectById(userId);
+			if (user == null) {
+				return null;
+			}
+			UserOwnerScopeVO vo = new UserOwnerScopeVO();
+			vo.setId(user.getId());
+			vo.setTenantId(user.getTenantId());
+			vo.setStatus(user.getStatus());
+			vo.setIsDeleted(user.getIsDeleted());
+			return vo;
+		});
+	}
+
+	@Override
+	public UserManagementScopeVO getManagementScope() {
+		BladeUser bladeUser = AuthUtil.getUser();
+		if (bladeUser == null || bladeUser.getUserId() == null) {
+			return null;
+		}
+		Long userId = bladeUser.getUserId();
+		String sessionTenantId = bladeUser.getTenantId();
+
+		// 核对数据库中的实际用户状态和租户归属
+		return TenantUtil.ignore(() -> {
+			User dbUser = baseMapper.selectById(userId);
+			if (dbUser == null || dbUser.getIsDeleted() != BladeConstant.DB_NOT_DELETED || dbUser.getStatus() != 1) {
+				return null;
+			}
+			if (StringUtil.isNotBlank(sessionTenantId) && !sessionTenantId.equals(dbUser.getTenantId())) {
+				return null;
+			}
+
+			UserManagementScopeVO vo = new UserManagementScopeVO();
+			vo.setUserId(dbUser.getId());
+			vo.setTenantId(dbUser.getTenantId());
+
+			boolean isPlatformAdmin = false;
+			boolean isTenantAdmin = false;
+
+			// 查询用户所有有效角色
+			List<String> roleIdList = Func.toStrList(dbUser.getRoleId());
+			if (Func.isNotEmpty(roleIdList)) {
+				List<Role> roles = roleService.list(Wrappers.<Role>query().lambda()
+					.in(Role::getId, roleIdList)
+					.eq(Role::getIsDeleted, BladeConstant.DB_NOT_DELETED));
+				for (Role role : roles) {
+					// 平台超级管理员：平台租户 000000 且角色别名为 administrator
+					if (BladeConstant.ADMIN_TENANT_ID.equals(dbUser.getTenantId())
+						&& BladeConstant.ADMIN_TENANT_ID.equals(role.getTenantId())
+						&& "administrator".equalsIgnoreCase(role.getRoleAlias())) {
+						isPlatformAdmin = true;
+					}
+					// 租户管理员：当前租户且角色别名为 admin
+					if (StringUtil.isNotBlank(dbUser.getTenantId())
+						&& dbUser.getTenantId().equals(role.getTenantId())
+						&& "admin".equalsIgnoreCase(role.getRoleAlias())) {
+						isTenantAdmin = true;
+					}
+				}
+			}
+
+			vo.setPlatformAdmin(isPlatformAdmin);
+			vo.setTenantAdmin(isTenantAdmin);
+			return vo;
+		});
 	}
 
 }

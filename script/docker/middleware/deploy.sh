@@ -15,7 +15,7 @@ run_compose() {
 	docker compose \
 		-p "springblade-$service" \
 		--env-file "$SCRIPT_DIR/$service/.env" \
-		-f "$SCRIPT_DIR/$service/compose.yml" \
+		-f "$SCRIPT_DIR/$service/docker-compose.yaml" \
 		"$@"
 }
 

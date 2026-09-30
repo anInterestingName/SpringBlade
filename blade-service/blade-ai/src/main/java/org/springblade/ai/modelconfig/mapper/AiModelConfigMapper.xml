@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.springblade.ai.modelconfig.mapper.AiModelConfigMapper">
+
+    <select id="selectModelPage" resultType="org.springblade.ai.modelconfig.vo.ModelListVO">
+        SELECT
+            id,
+            provider_id,
+            model_code,
+            model_name,
+            upstream_model_id,
+            api_protocol,
+            capability_type,
+            tenant_id,
+            owner_user_id,
+            status,
+            lock_version,
+            update_time
+        FROM blade_ai_model_config
+        WHERE is_deleted = 0
+        <if test="param.providerId != null">
+            AND provider_id = #{param.providerId}
+        </if>
+        <if test="param.tenantId != null and param.tenantId != ''">
+            AND tenant_id = #{param.tenantId}
+        </if>
+        <if test="param.ownerUserId != null">
+            AND owner_user_id = #{param.ownerUserId}
+        </if>
+        <if test="param.modelCode != null and param.modelCode != ''">
+            AND model_code LIKE CONCAT('%', #{param.modelCode}, '%')
+        </if>
+        <if test="param.modelName != null and param.modelName != ''">
+            AND model_name LIKE CONCAT('%', #{param.modelName}, '%')
+        </if>
+        <if test="param.status != null">
+            AND status = #{param.status}
+        </if>
+        ORDER BY update_time DESC, id DESC
+    </select>
+
+    <select id="selectModelById" resultType="org.springblade.ai.modelconfig.entity.AiModelConfig">
+        SELECT *
+        FROM blade_ai_model_config
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </select>
+
+</mapper>

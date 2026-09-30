@@ -118,4 +118,6 @@ blade:
       - blade_ai_prompt_version
       - blade_tag_category
       - blade_tag
+      - blade_ai_provider_config
+      - blade_ai_model_config
 

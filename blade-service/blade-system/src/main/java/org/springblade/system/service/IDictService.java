@@ -18,6 +18,7 @@ package org.springblade.system.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.spring.service.IService;
 import org.springblade.system.entity.Dict;
+import org.springblade.system.vo.DictOptionVO;
 import org.springblade.system.vo.DictVO;
 
 import java.util.List;
@@ -61,6 +62,14 @@ public interface IDictService extends IService<Dict> {
 	 * @return 字典集合
 	 */
 	List<Dict> getList(String code);
+
+	/**
+	 * 获取字典有效选项集合（含主键ID与稳定值）
+	 *
+	 * @param code 字典编号
+	 * @return 选项集合
+	 */
+	List<DictOptionVO> getOptions(String code);
 
 	/**
 	 * 新增或修改

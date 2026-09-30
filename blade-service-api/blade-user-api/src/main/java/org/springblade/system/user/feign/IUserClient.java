@@ -21,6 +21,9 @@ import org.springblade.core.tool.api.R;
 import org.springblade.system.user.dto.UserRegisterCommand;
 import org.springblade.system.user.entity.UserInfo;
 import org.springblade.system.user.entity.UserOauth;
+import org.springblade.system.user.vo.UserManagementScopeVO;
+import org.springblade.system.user.vo.UserOwnerScopeVO;
+import org.springblade.system.user.vo.UserVO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -77,4 +80,21 @@ public interface IUserClient {
 	 */
 	@PostMapping(API_PREFIX + "/register")
 	R<Boolean> register(@RequestBody UserRegisterCommand command);
+
+	/**
+	 * 获取目标用户归属与有效状态
+	 *
+	 * @param userId 用户ID
+	 * @return 归属结果
+	 */
+	@GetMapping(API_PREFIX + "/owner-scope")
+	R<UserOwnerScopeVO> ownerScope(@RequestParam("userId") Long userId);
+
+	/**
+	 * 获取当前已认证用户的管理范围
+	 *
+	 * @return 管理范围结果
+	 */
+	@GetMapping(API_PREFIX + "/management-scope")
+	R<UserManagementScopeVO> managementScope();
 }

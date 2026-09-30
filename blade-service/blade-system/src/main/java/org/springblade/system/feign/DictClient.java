@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import org.springblade.core.tool.api.R;
 import org.springblade.system.entity.Dict;
 import org.springblade.system.service.IDictService;
+import org.springblade.system.vo.DictOptionVO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -49,6 +50,12 @@ public class DictClient implements IDictClient {
 	@GetMapping(API_PREFIX + "/getList")
 	public R<List<Dict>> getList(String code) {
 		return R.data(service.getList(code));
+	}
+
+	@Override
+	@GetMapping(API_PREFIX + "/options")
+	public R<List<DictOptionVO>> getOptions(String code) {
+		return R.data(service.getOptions(code));
 	}
 
 }

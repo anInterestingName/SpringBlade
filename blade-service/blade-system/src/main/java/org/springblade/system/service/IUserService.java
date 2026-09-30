@@ -24,6 +24,8 @@ import org.springblade.system.user.entity.User;
 import org.springblade.system.user.entity.UserInfo;
 import org.springblade.system.user.entity.UserOauth;
 import org.springblade.system.user.dto.UserRegisterCommand;
+import org.springblade.system.user.vo.UserManagementScopeVO;
+import org.springblade.system.user.vo.UserOwnerScopeVO;
 import org.springblade.system.user.vo.UserVO;
 import org.springblade.system.excel.UserExcel;
 
@@ -210,4 +212,19 @@ public interface IUserService extends BaseService<User> {
 	 * @return 是否成功
 	 */
 	boolean register(UserRegisterCommand command);
+
+	/**
+	 * 获取用户归属校验信息（精简）
+	 *
+	 * @param userId 用户主键
+	 * @return 精简归属信息
+	 */
+	UserOwnerScopeVO getOwnerScope(Long userId);
+
+	/**
+	 * 获取当前已认证用户的管理范围信息
+	 *
+	 * @return 管理范围信息
+	 */
+	UserManagementScopeVO getManagementScope();
 }

@@ -30,10 +30,10 @@ else
 fi
 mv "$tmp_file" .env
 
-docker compose -p springblade-app --env-file .env -f compose.yml config --quiet
-docker compose -p springblade-app --env-file .env -f compose.yml pull
-docker compose -p springblade-app --env-file .env -f compose.yml up -d --remove-orphans
-docker compose -p springblade-app --env-file .env -f compose.yml ps
+docker compose -p springblade-app --env-file .env -f docker-compose.yaml config --quiet
+docker compose -p springblade-app --env-file .env -f docker-compose.yaml pull
+docker compose -p springblade-app --env-file .env -f docker-compose.yaml up -d --remove-orphans
+docker compose -p springblade-app --env-file .env -f docker-compose.yaml ps
 
 if ! command -v curl >/dev/null 2>&1; then
 	echo "curl is required for the gateway liveness check." >&2
@@ -59,5 +59,5 @@ while [ "$attempt" -le "$liveness_retries" ]; do
 done
 
 echo "Gateway liveness check failed after $liveness_retries attempts: $liveness_url" >&2
-docker compose -p springblade-app --env-file .env -f compose.yml logs --tail=100 blade-gateway >&2
+docker compose -p springblade-app --env-file .env -f docker-compose.yaml logs --tail=100 blade-gateway >&2
 exit 1

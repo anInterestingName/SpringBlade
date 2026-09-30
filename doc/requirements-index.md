@@ -15,7 +15,7 @@
 
 | 年份 | 下一个编号 | 最后分配日期 | 维护人 |
 | --- | --- | --- | --- |
-| 2026 | `REQ-2026-007` | 2026-09-17 | Codex |
+| 2026 | `REQ-2026-009` | 2026-09-29 | Codex |
 
 > 分配编号后立即将“下一个编号”加一。
 
@@ -29,6 +29,8 @@
 | [REQ-2026-004](requirements/REQ-2026-004-image-prompt-reverse.md) | 图片提示词反推与标签化分析 | AI 分析、租户标签快照、提示词生成 | 0.4 | 开发中 | [需求文档 0.4](requirements/REQ-2026-004-image-prompt-reverse.md) | 不涉及 | [详细设计 0.2](design/DESIGN-REQ-2026-004-image-prompt-reverse.md) | [测试文档 0.2](test/TEST-REQ-2026-004-image-prompt-reverse.md) | 待指定 | 2026-09-17 |
 | [REQ-2026-005](requirements/REQ-2026-005-prompt-scope-and-publishing.md) | 提示词类型、发布方式与数据权限增强 | AI 提示词管理、权限与租户隔离 | 0.6 | 开发中 | [需求文档 0.6](requirements/REQ-2026-005-prompt-scope-and-publishing.md) | [数据库设计 0.2](database/DB-REQ-2026-005-prompt-scope-and-publishing.md) | [详细设计 0.3](design/DESIGN-REQ-2026-005-prompt-scope-and-publishing.md) | [测试文档 0.2](test/TEST-REQ-2026-005-prompt-scope-and-publishing.md) | 用户 | 2026-09-16 |
 | REQ-2026-006 | 旧版部署文档撤回；编号不复用，部署实现仍保留 | 部署文档 | 0.4（历史） | 已废弃 | 已移除 | 不涉及 | 已移除 | 已移除 | 用户 | 2026-09-29 |
+| [REQ-2026-007](requirements/REQ-2026-007-deployment-standardization.md) | 前后端容器部署规范化 | Docker Compose、部署教程、Saber 协同 | 0.2 | 开发中 | [需求文档 0.2](requirements/REQ-2026-007-deployment-standardization.md) | 不涉及 | [详细设计 0.2](design/DESIGN-REQ-2026-007-deployment-standardization.md) | [测试文档 0.2](test/TEST-REQ-2026-007-deployment-standardization.md) | 用户 | 2026-09-29 |
+| [REQ-2026-008](requirements/REQ-2026-008-ai-model-configuration.md) | 大模型供应商与模型配置管理 | blade-ai、blade-ai-api、Saber 协同 | 0.9 | 开发中 | [需求文档 0.9](requirements/REQ-2026-008-ai-model-configuration.md) | [数据库设计 0.4](database/DB-REQ-2026-008-ai-model-configuration.md) | [详细设计 0.4](design/DESIGN-REQ-2026-008-ai-model-configuration.md) | [测试文档 0.3](test/TEST-REQ-2026-008-ai-model-configuration.md) | 待指定 | 2026-09-30 |
 
 ## 状态说明
 
