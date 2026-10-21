@@ -16,10 +16,13 @@ x-blade-environment: &blade-environment
   BLADE_REDIS_PORT: ${BLADE_REDIS_PORT:-6379}
   BLADE_REDIS_PASSWORD: ${BLADE_REDIS_PASSWORD}
   BLADE_REDIS_DATABASE: ${BLADE_REDIS_DATABASE:-0}
-  BLADE_OAUTH2_PUBLIC_KEY: ${BLADE_OAUTH2_PUBLIC_KEY}
-  BLADE_OAUTH2_PRIVATE_KEY: ${BLADE_OAUTH2_PRIVATE_KEY}
-  BLADE_TOKEN_SIGN_KEY: ${BLADE_TOKEN_SIGN_KEY}
-  BLADE_TOKEN_CRYPTO_KEY: ${BLADE_TOKEN_CRYPTO_KEY}
+  AUTHORIZATION_ISSUER: ${AUTHORIZATION_ISSUER:?配置统一HTTPS issuer}
+  AUTHORIZATION_COOKIE_SECURE: "true"
+  AUTHORIZATION_REDIS_HOST: ${BLADE_REDIS_HOST:-redis}
+  AUTHORIZATION_REDIS_PORT: ${BLADE_REDIS_PORT:-6379}
+  AUTHORIZATION_REDIS_PASSWORD: ${BLADE_REDIS_PASSWORD}
+  AUTHORIZATION_REDIS_DATABASE: ${BLADE_REDIS_DATABASE:-0}
+  AUTHORIZATION_TRUSTED_PROXY_PATTERN: ${AUTHORIZATION_TRUSTED_PROXY_PATTERN:?配置可信入口代理地址正则}
 
 x-blade-service: &blade-service
   restart: unless-stopped
@@ -41,55 +44,119 @@ services:
     <<: *blade-service
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-gateway:${IMAGE_TAG}
     ports:
-      - ${GATEWAY_BIND_ADDRESS:-0.0.0.0}:${GATEWAY_PORT:-8080}:80
+      - ${GATEWAY_BIND_ADDRESS:-127.0.0.1}:${GATEWAY_PORT:-8080}:80
+    environment:
+      <<: *blade-environment
+      BFF_BIND_ADDRESS: 0.0.0.0
+      AUTHORIZATION_CLIENT_ID: ${AUTHORIZATION_CLIENT_ID:-gateway-bff}
+      AUTHORIZATION_CLIENT_SECRET: ${AUTHORIZATION_CLIENT_SECRET:?配置BFF密钥}
+      AUTHORIZATION_REDIRECT_URI: ${AUTHORIZATION_REDIRECT_URI:?配置同源BFF回调}
+      BFF_FRONTEND_URI: ${BFF_FRONTEND_URI:?配置同源前端回跳}
+      BFF_SYSTEM_URL: http://blade-system:8106
+      BFF_DESK_URL: http://blade-desk:8105
+      BFF_AI_URL: http://blade-ai:8107
+      BFF_LOG_URL: http://blade-log:8103
+      BFF_RESOURCE_URL: http://blade-resource:8010
+      BFF_DEVELOP_URL: http://blade-develop:7007
+      BFF_REPORT_URL: http://blade-report:8108
+      BFF_DEMO_URL: ${BFF_DEMO_URL:-http://blade-demo:8200}
     expose:
       - "80"
 
-  blade-auth:
+  blade-authorization-server:
     <<: *blade-service
-    image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-auth:${IMAGE_TAG}
+    image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-authorization-server:${IMAGE_TAG}
+    environment:
+      <<: *blade-environment
+      AUTHORIZATION_BIND_ADDRESS: 0.0.0.0
+      AUTHORIZATION_DATASOURCE_URL: ${AUTHORIZATION_DATASOURCE_URL:?配置授权数据库}
+      AUTHORIZATION_DATASOURCE_USERNAME: ${AUTHORIZATION_DATASOURCE_USERNAME:?配置授权数据库账号}
+      AUTHORIZATION_DATASOURCE_PASSWORD: ${AUTHORIZATION_DATASOURCE_PASSWORD:?配置授权数据库密码}
+      AUTHORIZATION_INTERNAL_CLIENT_SECRET: ${AUTHORIZATION_INTERNAL_CLIENT_SECRET:?配置内部bootstrap密钥}
+      AUTHORIZATION_PAYLOAD_ENCRYPTION_KEY: ${AUTHORIZATION_PAYLOAD_ENCRYPTION_KEY:?配置授权payload加密密钥}
+      AUTHORIZATION_ACTIVE_KEY_ID: ${AUTHORIZATION_ACTIVE_KEY_ID:?配置活动kid}
+      AUTHORIZATION_JWK_SET_LOCATION: file:/run/secrets/authorization-jwks.json
+      AUTHORIZATION_FRONTEND_BASE_URI: ${AUTHORIZATION_FRONTEND_BASE_URI:?配置同源前端地址}
+      AUTHORIZATION_BFF_LOGIN_URI: ${AUTHORIZATION_BFF_LOGIN_URI:?配置同源BFF登录发起地址}
+    volumes:
+      - ${AUTHORIZATION_JWK_FILE:?配置仓库外JWK绝对路径}:/run/secrets/authorization-jwks.json:ro
     expose:
       - "8100"
 
   blade-admin:
     <<: *blade-service
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-admin:${IMAGE_TAG}
+    environment:
+      <<: *blade-environment
+      AUTHORIZATION_SERVICE_CLIENT_ID: blade-admin
+      AUTHORIZATION_SERVICE_CLIENT_SECRET: ${AUTHORIZATION_ADMIN_CLIENT_SECRET:?配置blade-admin后台服务密钥}
+      AUTHORIZATION_SERVICE_CLIENT_SCOPES: service.read
     expose:
       - "7002"
 
   blade-develop:
     <<: *blade-service
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-develop:${IMAGE_TAG}
+    environment:
+      <<: *blade-environment
+      AUTHORIZATION_SERVICE_CLIENT_ID: blade-develop
+      AUTHORIZATION_SERVICE_CLIENT_SECRET: ${AUTHORIZATION_DEVELOP_CLIENT_SECRET:?配置blade-develop后台服务密钥}
+      AUTHORIZATION_SERVICE_CLIENT_SCOPES: service.read
     expose:
       - "7007"
 
   blade-report:
     <<: *blade-service
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-report:${IMAGE_TAG}
+    environment:
+      <<: *blade-environment
+      AUTHORIZATION_SERVICE_CLIENT_ID: blade-report
+      AUTHORIZATION_SERVICE_CLIENT_SECRET: ${AUTHORIZATION_REPORT_CLIENT_SECRET:?配置blade-report后台服务密钥}
+      AUTHORIZATION_SERVICE_CLIENT_SCOPES: service.read
     expose:
       - "8108"
 
   blade-resource:
     <<: *blade-service
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-resource:${IMAGE_TAG}
+    environment:
+      <<: *blade-environment
+      AUTHORIZATION_SERVICE_CLIENT_ID: blade-resource
+      AUTHORIZATION_SERVICE_CLIENT_SECRET: ${AUTHORIZATION_RESOURCE_CLIENT_SECRET:?配置blade-resource后台服务密钥}
+      AUTHORIZATION_SERVICE_CLIENT_SCOPES: service.read
     expose:
       - "8010"
 
   blade-desk:
     <<: *blade-service
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-desk:${IMAGE_TAG}
+    environment:
+      <<: *blade-environment
+      AUTHORIZATION_SERVICE_CLIENT_ID: blade-desk
+      AUTHORIZATION_SERVICE_CLIENT_SECRET: ${AUTHORIZATION_DESK_CLIENT_SECRET:?配置blade-desk后台服务密钥}
+      AUTHORIZATION_SERVICE_CLIENT_SCOPES: service.read
     expose:
       - "8105"
 
   blade-log:
     <<: *blade-service
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-log:${IMAGE_TAG}
+    environment:
+      <<: *blade-environment
+      AUTHORIZATION_SERVICE_CLIENT_ID: blade-log
+      AUTHORIZATION_SERVICE_CLIENT_SECRET: ${AUTHORIZATION_LOG_CLIENT_SECRET:?配置blade-log后台服务密钥}
+      AUTHORIZATION_SERVICE_CLIENT_SCOPES: service.read
     expose:
       - "8103"
 
   blade-system:
     <<: *blade-service
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-system:${IMAGE_TAG}
+    environment:
+      <<: *blade-environment
+      AUTHORIZATION_SERVICE_CLIENT_ID: blade-system
+      AUTHORIZATION_SERVICE_CLIENT_SECRET: ${AUTHORIZATION_SYSTEM_CLIENT_SECRET:?配置blade-system后台服务密钥}
+      AUTHORIZATION_SERVICE_CLIENT_SCOPES: service.read
     expose:
       - "8106"
 
@@ -98,6 +165,9 @@ services:
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/blade-ai:${IMAGE_TAG}
     environment:
       <<: *blade-environment
+      AUTHORIZATION_SERVICE_CLIENT_ID: blade-ai
+      AUTHORIZATION_SERVICE_CLIENT_SECRET: ${AUTHORIZATION_AI_CLIENT_SECRET:?配置blade-ai后台服务密钥}
+      AUTHORIZATION_SERVICE_CLIENT_SCOPES: service.read
       BLADE_AI_REVERSE_FAST_BASE_URL: ${BLADE_AI_REVERSE_FAST_BASE_URL:-}
       BLADE_AI_REVERSE_FAST_API_KEY: ${BLADE_AI_REVERSE_FAST_API_KEY:-}
       BLADE_AI_REVERSE_TARGET_ENGINE: ${BLADE_AI_REVERSE_TARGET_ENGINE:-}

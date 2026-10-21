@@ -1,0 +1,61 @@
+REQ-2026-010：逐项记录已执行断言和未完成的验收步骤
+Issuer=http://127.0.0.1:8100；Gateway=http://127.0.0.1:80；Resource=http://127.0.0.1:8200；System=http://127.0.0.1:8106
+[BLOCK] TC-001 : 构建与敏感配置门禁；目标模块离线编译及认证配置检查通过；clean package 尚未执行
+[PASS] TC-002 : Discovery 与 JWKS 公钥边界；Discovery HTTP 200、issuer/端点/S256 匹配；JWKS 1 个 RSA 公钥，无私钥字段
+[BLOCK] TC-017 : 外部 JWK 文件与错误启动配置；外部 JWK 文件与实际 JWKS kid 已匹配；错误权限/kid/算法/长度的隔离启动与替换重启尚未执行
+[PASS] TC-008 : client_credentials 与 scope；实际服务令牌签发=200、非法 scope=400/invalid_scope、资源读取=200、缺 scope=403、错误 audience=401
+[BLOCK] TC-006 : 真实密码与租户拒绝；携带有效 CSRF 的错误密码、越租户登录确实到达凭据校验并拒绝；正常登录成功；旧摘要迁移/停用用户/租户夹具待准备
+[PASS] TC-004 : 授权码与 PKCE 正常流程；授权码、state、S256 PKCE、用户资源、UserInfo 和 BFF 回调会话实际验证通过
+[BLOCK] TC-005 : PKCE、回调与授权码一次性；错误 verifier、错误回调、code 重放已通过；跨客户端、缺失/超长 verifier 和过期 code 夹具待准备
+[BLOCK] TC-012 : BFF CSRF 与退出；真实 BFF 缺失 CSRF=403、退出=200、退出后=401、重复退出已验证；拒绝同意和过期回调恢复待执行
+[BLOCK] TC-003 : 客户端管理校验入口；真实管理员客户端管理入口已验证；创建/非法配置/重复键/数据库副作用需独立客户端夹具与精确清理，不以禁用的动态注册端点 404 代替
+[BLOCK] TC-009 : Refresh Token 轮换与令牌族重用；真实刷新轮换、旧值 invalid_grant、重用后后继失效已验证；停用用户/租户夹具待准备
+[PASS] TC-010 : 撤销与内省；Access/Refresh 实际撤销、内省 active=false、刷新拒绝；资源 HTTP 200（离线 JWT 可持续到 exp）
+[BLOCK] TC-020 : 真实授权码和刷新并发；同一真实 code 和 Refresh Token 各 4 个并发请求，均严格 1 个 200、3 个 invalid_grant；容量/P95/延迟故障注入待执行
+[BLOCK] TC-011 : BFF 会话隔离与 no-store；同用户两个独立 BFF Cookie、HttpOnly、三类响应 no-store、无 Token、退出不影响另一会话均实测通过；不同用户夹具待准备
+[BLOCK] TC-014 : 网关旧路由和内部隔离；真实网关登录后内部接口 403、未知路径 404、system 旧路由已验证；其他未启动服务的路由回归待执行
+[BLOCK] TC-023 : TokenRelay 与伪造身份头；真实 BFF TokenRelay 与伪造头不覆盖身份、直连无 Token=401 已验证；全部资源服务的独立校验矩阵待执行
+[BLOCK] TC-025 : JWT 与现有 BladeUser 权限字段；JWT 基础权限字段、BladeUser Controller 和角色菜单已验证；数据权限算法与跨租户回归待执行
+[BLOCK] TC-013 : 资源端 JWT 拒绝与正常访问；有效 JWT=200、无 Token/格式错误/签名篡改=401 已验证；独立有效签名的错误 issuer/exp/nbf 夹具待准备，scope/audience 已由 TC-008 实测
+[BLOCK] TC-015 : 内部契约 scope 与依赖降级；真实内部接口 scope 不足=403，两份实际认证 Fallback 静态 fail-closed 通过；system 停机/超时/错误结构故障注入待执行
+[BLOCK] TC-024 : Feign 用户与服务 Token 传播；公共 Feign 多 scope 注册静态检查通过；真实 HTTP 用户调用和无请求上下文后台 Feign 调用探针待准备
+[BLOCK] TC-018 : 落盘密文与敏感日志；实际 AuthorizationCodec 的 AES-GCM/v1 静态检查通过；MySQL/Redis 本轮数据与运行日志尚未取证，不以源码关键字替代落盘检查；不涉及脱敏功能建设
+[BLOCK] TC-019 : MySQL 全量、升级、幂等与回滚；两份 SQL 客户端摘要格式静态检查通过；独立空库/存量快照、真实重复执行与回滚未执行
+[BLOCK] TC-021 : 健康、指标与告警；健康端点实际 UP；认证分类指标、依赖延迟、刷新重用告警与故障观测尚未执行
+[BLOCK] TC-016 : MySQL/Redis 故障恢复；未对共享测试基础设施执行停机/故障注入；独立实例、快照和恢复夹具待准备，配置存在不能证明恢复通过
+[BLOCK] TC-022 : 双版本灰度和回滚；未切换用户正在使用的应用版本；可回滚部署夹具和独立入口待准备，配置存在不能证明演练通过
+[BLOCK] TC-007 : 限流、TTL 和可信来源；未提供独立测试来源与限流计数清理夹具；不对共享本地 IP 连续失败以免锁定其他用户；不再无条件 PASS
+令牌清理：登记 17，失败 0；按所属客户端撤销并内省确认
+
+Id     Status Description                    Details
+--     ------ -----------                    -------
+TC-001 BLOCK  构建与敏感配置门禁             目标模块离线编译及认证配置检查通过；clean package 尚未执行
+TC-002 PASS   Discovery 与 JWKS 公钥边界     Discovery HTTP 200、issuer/端点/S256 匹配；JWKS 1 个 RSA 公钥，无私钥字段
+TC-003 BLOCK  客户端管理校验入口             真实管理员客户端管理入口已验证；创建/非法配置/重复键/数据库副作用需独立客户端夹具与精确清理，不以禁用的动态注册端点 404 代替
+TC-004 PASS   授权码与 PKCE 正常流程         授权码、state、S256 PKCE、用户资源、UserInfo 和 BFF 回调会话实际验证通过
+TC-005 BLOCK  PKCE、回调与授权码一次性       错误 verifier、错误回调、code 重放已通过；跨客户端、缺失/超长 verifier 和过期 code 夹具待准备
+TC-006 BLOCK  真实密码与租户拒绝             携带有效 CSRF 的错误密码、越租户登录确实到达凭据校验并拒绝；正常登录成功；旧摘要迁移/停用用户/租户夹具待准备
+TC-007 BLOCK  限流、TTL 和可信来源           未提供独立测试来源与限流计数清理夹具；不对共享本地 IP 连续失败以免锁定其他用户；不再无条件 PASS
+TC-008 PASS   client_credentials 与 scope    实际服务令牌签发=200、非法 scope=400/invalid_scope、资源读取=200、缺 scope=403、错误 audience=401
+TC-009 BLOCK  Refresh Token 轮换与令牌族重用 真实刷新轮换、旧值 invalid_grant、重用后后继失效已验证；停用用户/租户夹具待准备
+TC-010 PASS   撤销与内省                     Access/Refresh 实际撤销、内省 active=false、刷新拒绝；资源 HTTP 200（离线 JWT 可持续到 exp）
+TC-011 BLOCK  BFF 会话隔离与 no-store        同用户两个独立 BFF Cookie、HttpOnly、三类响应 no-store、无 Token、退出不影响另一会话均实测通过；不同用户夹具待准备
+TC-012 BLOCK  BFF CSRF 与退出                真实 BFF 缺失 CSRF=403、退出=200、退出后=401、重复退出已验证；拒绝同意和过期回调恢复待执行
+TC-013 BLOCK  资源端 JWT 拒绝与正常访问      有效 JWT=200、无 Token/格式错误/签名篡改=401 已验证；独立有效签名的错误 issuer/exp/nbf 夹具待准备，scope/audience 已由 TC-008 实测
+TC-014 BLOCK  网关旧路由和内部隔离           真实网关登录后内部接口 403、未知路径 404、system 旧路由已验证；其他未启动服务的路由回归待执行
+TC-015 BLOCK  内部契约 scope 与依赖降级      真实内部接口 scope 不足=403，两份实际认证 Fallback 静态 fail-closed 通过；system 停机/超时/错误结构故障注入待执行
+TC-016 BLOCK  MySQL/Redis 故障恢复           未对共享测试基础设施执行停机/故障注入；独立实例、快照和恢复夹具待准备，配置存在不能证明恢复通过
+TC-017 BLOCK  外部 JWK 文件与错误启动配置    外部 JWK 文件与实际 JWKS kid 已匹配；错误权限/kid/算法/长度的隔离启动与替换重启尚未执行
+TC-018 BLOCK  落盘密文与敏感日志             实际 AuthorizationCodec 的 AES-GCM/v1 静态检查通过；MySQL/Redis 本轮数据与运行日志尚未取证，不以源码关键字替代落盘检查；不涉及脱敏功能
+                                             建设
+TC-019 BLOCK  MySQL 全量、升级、幂等与回滚   两份 SQL 客户端摘要格式静态检查通过；独立空库/存量快照、真实重复执行与回滚未执行
+TC-020 BLOCK  真实授权码和刷新并发           同一真实 code 和 Refresh Token 各 4 个并发请求，均严格 1 个 200、3 个 invalid_grant；容量/P95/延迟故障注入待执行
+TC-021 BLOCK  健康、指标与告警               健康端点实际 UP；认证分类指标、依赖延迟、刷新重用告警与故障观测尚未执行
+TC-022 BLOCK  双版本灰度和回滚               未切换用户正在使用的应用版本；可回滚部署夹具和独立入口待准备，配置存在不能证明演练通过
+TC-023 BLOCK  TokenRelay 与伪造身份头        真实 BFF TokenRelay 与伪造头不覆盖身份、直连无 Token=401 已验证；全部资源服务的独立校验矩阵待执行
+TC-024 BLOCK  Feign 用户与服务 Token 传播    公共 Feign 多 scope 注册静态检查通过；真实 HTTP 用户调用和无请求上下文后台 Feign 调用探针待准备
+TC-025 BLOCK  JWT 与现有 BladeUser 权限字段  JWT 基础权限字段、BladeUser Controller 和角色菜单已验证；数据权限算法与跨租户回归待执行
+
+
+总计用例: 25 | 通过: 4 | 失败: 0 | 阻塞: 21 | 跳过: 0
+结构化证据：D:\workspace\project\SpringBlade\doc\test\evidence\REQ-2026-010\2026-10-13-after-restart-suite-results.json

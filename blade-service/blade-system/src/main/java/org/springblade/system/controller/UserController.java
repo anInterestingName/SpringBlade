@@ -44,6 +44,7 @@ import org.springblade.system.excel.UserExcel;
 import org.springblade.system.excel.UserImportListener;
 import org.springblade.system.service.IUserService;
 import org.springblade.system.user.entity.User;
+import org.springblade.system.user.dto.UserPasswordUpdateDTO;
 import org.springblade.system.user.vo.UserVO;
 import org.springblade.system.wrapper.UserWrapper;
 import org.springframework.util.StringUtils;
@@ -92,7 +93,11 @@ public class UserController {
 	@GetMapping("/info")
 	@BladeView
 	public R<UserVO> info(BladeUser user) {
+		if (user == null || user.getUserId() == null) return R.fail(401, "用户身份无效");
 		User detail = userService.getById(user.getUserId());
+		if (detail == null || !user.getTenantId().equals(detail.getTenantId()) || !Integer.valueOf(1).equals(detail.getStatus())) {
+			return R.fail(401, "用户身份已失效");
+		}
 		return R.data(UserWrapper.build().entityVO(detail));
 	}
 
@@ -167,13 +172,11 @@ public class UserController {
 	 */
 	@PostMapping("/update-password")
 	@Operation(summary = "修改密码", description = "传入密码")
-	public R updatePassword(BladeUser user, @Parameter(description = "旧密码", required = true) @RequestParam String oldPassword,
-							@Parameter(description = "新密码", required = true) @RequestParam String newPassword,
-							@Parameter(description = "新密码", required = true) @RequestParam String newPassword1) {
-		boolean temp = userService.updatePassword(user.getUserId(), oldPassword, newPassword, newPassword1);
-		return R.status(temp);
+	public R updatePassword(BladeUser user, @Valid @RequestBody UserPasswordUpdateDTO password) {
+		if (user == null || user.getUserId() == null) return R.fail(401, "用户身份无效");
+		return R.status(userService.updatePassword(user.getUserId(), password.getOldPassword(),
+			password.getNewPassword(), password.getConfirmPassword()));
 	}
-
 	/**
 	 * 用户列表
 	 */

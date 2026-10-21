@@ -58,7 +58,7 @@ jobs:
           IMAGE_OWNER: ${{ steps.image_meta.outputs.image_owner }}
         run: |
           services=(
-            "blade-auth:blade-auth"
+            "blade-authorization-server:blade-authorization-server"
             "blade-gateway:blade-gateway"
             "blade-admin:blade-ops/blade-admin"
             "blade-develop:blade-ops/blade-develop"

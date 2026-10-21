@@ -119,6 +119,16 @@ public interface IUserService extends BaseService<User> {
 	UserInfo userInfo(String tenantId, String account, String password);
 
 	/**
+	 * 标准认证链路校验真实密码，禁止把旧密码摘要当作凭据重放。
+	 *
+	 * @param tenantId 租户编号
+	 * @param account 账号
+	 * @param password 真实密码
+	 * @return 有效用户信息
+	 */
+	UserInfo authenticateUser(String tenantId, String account, String password);
+
+	/**
 	 * 用户信息
 	 *
 	 * @param userOauth 第三方授权信息

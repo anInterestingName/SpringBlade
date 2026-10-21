@@ -1,0 +1,74 @@
+# 授权服务开发配置，发布为 blade-authorization-server-dev.yaml，DEFAULT_GROUP。
+# 密码、私钥和授权状态加密密钥只通过部署环境或受控密钥配置注入，不在此文件保存明文。
+server:
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      internal-proxies: ${AUTHORIZATION_TRUSTED_PROXY_PATTERN:127\.0\.0\.1|::1}
+      remote-ip-header: X-Forwarded-For
+      protocol-header: X-Forwarded-Proto
+  address: ${AUTHORIZATION_BIND_ADDRESS:127.0.0.1}
+  port: ${AUTHORIZATION_PORT:8100}
+  error:
+    include-message: never
+    include-stacktrace: never
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        name: AUTH_SESSION
+        http-only: true
+        same-site: lax
+        secure: ${AUTHORIZATION_COOKIE_SECURE:false}
+
+spring:
+  autoconfigure:
+    exclude:
+      - org.springblade.common.security.config.StandardTokenResourceServerAutoConfiguration
+      - org.springblade.common.security.feign.ServiceTokenFeignConfiguration
+  datasource:
+    url: ${AUTHORIZATION_DATASOURCE_URL}
+    username: ${AUTHORIZATION_DATASOURCE_USERNAME}
+    password: ${AUTHORIZATION_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 3000
+      validation-timeout: 2000
+  data:
+    redis:
+      host: ${AUTHORIZATION_REDIS_HOST}
+      port: ${AUTHORIZATION_REDIS_PORT:${spring.data.redis.port:6379}}
+      password: ${AUTHORIZATION_REDIS_PASSWORD}
+      timeout: 3s
+      connect-timeout: 3s
+      database: ${AUTHORIZATION_REDIS_DATABASE:${spring.data.redis.database:0}}
+  session:
+    timeout: 30m
+    redis:
+      namespace: blade:authorization:session
+      repository-type: default
+
+blade:
+  authorization:
+    worker-id: ${AUTHORIZATION_WORKER_ID:0}
+    datacenter-id: ${AUTHORIZATION_DATACENTER_ID:0}
+    issuer: ${AUTHORIZATION_ISSUER:http://127.0.0.1:8100}
+    internal-client-secret: ${AUTHORIZATION_INTERNAL_CLIENT_SECRET}
+    default-tenant-id: ${AUTHORIZATION_DEFAULT_TENANT_ID:000000}
+    frontend-base-uri: ${AUTHORIZATION_FRONTEND_BASE_URI:http://127.0.0.1:2888}
+    bff-login-uri: ${AUTHORIZATION_BFF_LOGIN_URI:http://127.0.0.1:2888/oauth2/authorization/blade}
+    jwk-set-location: ${AUTHORIZATION_JWK_SET_LOCATION}
+    active-key-id: ${AUTHORIZATION_ACTIVE_KEY_ID}
+    require-https: ${AUTHORIZATION_REQUIRE_HTTPS:false}
+    payload-encryption-key: ${AUTHORIZATION_PAYLOAD_KEY:w8QZ02K3bM7nP1rT6yU8xV9aB4cD7eF0}
+    allow-legacy-payload: ${AUTHORIZATION_ALLOW_LEGACY_PAYLOAD:false}
+    pending-authorization-ttl: 10m
+    login-max-attempts: 5
+    login-lock-duration: 30m
+
+    protocol-max-requests: 120
+    protocol-rate-window: 1m
+    cleanup-enabled: true
+    cleanup-interval: 30m
+    cleanup-retention: 1d
+    cleanup-batch-size: 1000

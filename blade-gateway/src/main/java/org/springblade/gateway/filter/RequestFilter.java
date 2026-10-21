@@ -20,7 +20,6 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.a
  *
  * @author lengleng
  */
-@Component
 public class RequestFilter implements GlobalFilter, Ordered {
 
 	@Override

@@ -49,7 +49,6 @@ import static org.springblade.gateway.utils.JwtCrypto.BLADE_CRYPTO_AES_KEY;
  * @author Chill
  */
 @Slf4j
-@Component
 @AllArgsConstructor
 public class AuthFilter implements GlobalFilter, Ordered {
 	private final AuthProperties authProperties;
@@ -83,7 +82,9 @@ public class AuthFilter implements GlobalFilter, Ordered {
 	}
 
 	private boolean isSkip(String path) {
-		return AuthProvider.getDefaultSkipUrl().stream().anyMatch(pattern -> antPathMatcher.match(pattern, path))
+		return path.startsWith("/bff/") || path.startsWith("/oauth2/") || path.startsWith("/login/oauth2/")
+			|| path.startsWith("/.well-known/")
+			|| AuthProvider.getDefaultSkipUrl().stream().anyMatch(pattern -> antPathMatcher.match(pattern, path))
 			|| authProperties.getSkipUrl().stream().anyMatch(pattern -> antPathMatcher.match(pattern, path));
 	}
 

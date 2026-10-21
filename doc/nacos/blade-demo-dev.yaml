@@ -4,6 +4,9 @@ demo:
 
 #放行配置
 blade:
+  authorization:
+    resource:
+      audience: blade-demo
   secure:
     skip-url:
       - /demo/**

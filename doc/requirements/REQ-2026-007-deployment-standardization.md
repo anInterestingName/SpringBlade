@@ -6,15 +6,17 @@
 | --- | --- |
 | 需求名称 | 前后端容器部署规范化 |
 | 需求编号 | REQ-2026-007 |
-| 文档版本 | 0.2 |
+| 文档版本 | 0.5 |
 | 所属模块 | SpringBlade Docker 部署、Saber 部署协同 |
 | 目标版本/迭代 | SpringBlade 5.x 部署文档 |
-| 文档状态 | 开发中，待验收 |
+| 文档状态 | 开发中 |
 | 产品负责人 | 用户 |
 | 技术负责人 | Codex |
 | 创建日期 | 2026-09-29 |
-| 最后更新日期 | 2026-09-29 |
-| 关联事项 | [需求索引](../requirements-index.md)；[详细设计](../design/DESIGN-REQ-2026-007-deployment-standardization.md)；[测试文档](../test/TEST-REQ-2026-007-deployment-standardization.md)；数据库设计不涉及；Saber REQ-2026-008 |
+| 最后更新日期 | 2026-10-13 |
+| 关联事项 | [需求索引](../requirements-index.md)；[详细设计](../design/DESIGN-REQ-2026-007-deployment-standardization.md)；[测试文档](../test/TEST-REQ-2026-007-deployment-standardization.md)；数据库设计不涉及；Saber REQ-2026-008；[新认证发布 REQ-2026-010](REQ-2026-010-production-authentication.md) |
+
+本需求规范 Compose 命名、运行目录和连接地址，现有App/Ingress栈及CI已切换新授权服务、JWK挂载与同源HTTPS代理，Compose静态解析通过；完整运行部署仍须验收。教程已补充授权服务的 Nacos Data ID；新协议 SQL、外部密钥、Cookie、客户端、固定路由、安全停流/向前修复及发布顺序由 REQ-2026-010 维护，不扩大本需求的实现范围。容器发布新认证仍需补齐其部署夹具并验收，旧栈静态检查不代表新链路可发布；本需求通用镜像/基础设施恢复规则不能作为恢复旧auth的授权，新认证按REQ-010的单一入口与停流向前修复runbook。
 
 ## 2. 摘要与目标
 
@@ -104,5 +106,8 @@ flowchart LR
 
 | 日期 | 版本 | 变更内容 | 修改人 |
 | --- | --- | --- | --- |
+| 2026-10-13 | 0.3 | 同步教程中的新授权 Nacos 导入说明，标明现有旧认证 Compose 基线与 REQ-2026-010 发布边界；不变更原部署验收结果 | Codex |
 | 2026-09-29 | 0.2 | 教程主线改为按服务组织的简洁运行目录 | Codex |
 | 2026-09-29 | 0.1 | 建立通用前后端部署教程、Compose 命名及监听默认值需求 | Codex |
+| 2026-10-13 | 0.4 | 同步新认证仅安全停流/向前修复边界，区分通用容器恢复与旧auth逆向恢复；保留旧栈证据，不增加运行结果 | Codex |
+| 2026-10-13 | 0.5 | 同步REQ-010新授权服务镜像/Compose、外部JWK、TLS精确代理及网关仅本机探活绑定；两份Compose静态解析通过，运行演练未执行 | Codex |

@@ -17,6 +17,13 @@
         <dependency>
             <groupId>org.springblade</groupId>
             <artifactId>blade-core-boot</artifactId>
+            <exclusions>
+                <!-- 普通 Spring Boot 启动不加载依赖内的旧 bootstrap.yml 日志配置。 -->
+                <exclusion>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-starter-bootstrap</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springblade</groupId>
@@ -26,9 +33,24 @@
             <groupId>org.springblade</groupId>
             <artifactId>blade-demo-api</artifactId>
         </dependency>
+        <!--
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>dynamic-datasource-spring-boot4-starter</artifactId>
+        </dependency>
+        -->
+        <!-- 使用 Security 库与显式过滤器注册，资源服务保持无状态。 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
         </dependency>
     </dependencies>
 

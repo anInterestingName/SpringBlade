@@ -5,14 +5,16 @@
 | 项目 | 内容 |
 | --- | --- |
 | 设计编号 | DESIGN-REQ-2026-007 |
-| 文档版本 | 0.2 |
+| 文档版本 | 0.5 |
 | 关联需求 | [REQ-2026-007](../requirements/REQ-2026-007-deployment-standardization.md) |
 | 关联测试 | [TEST-REQ-2026-007](../test/TEST-REQ-2026-007-deployment-standardization.md) |
 | 关联教程 | [前后端容器部署教程](../guide/前后端容器部署教程.md) |
 | 数据库设计 | 不涉及 |
-| 文档状态 | 开发中，待验收 |
+| 文档状态 | 开发中 |
 | 负责人 | Codex |
-| 最后更新日期 | 2026-09-29 |
+| 最后更新日期 | 2026-10-13 |
+
+本轮script/docker/app和镜像CI已替换为blade-authorization-server并挂载外部只读JWK，Ingress提供同源HTTPS精确代理；App/Ingress Compose静态解析通过，镜像和发布演练未执行。原拓扑仅作通用部署背景。新认证采用七类固定业务 URL，网关默认关闭 Nacos 发现路由；授权服务/system 仍通过 Nacos 通信。新链路拓扑、SQL/密钥/客户端准备、Cookie/同源入口和安全停流/向前修复见 [DESIGN-REQ-2026-010](DESIGN-REQ-2026-010-production-authentication.md)，不能直接套用图中的网关发现路由假设。
 
 ## 2. 设计摘要与需求映射
 
@@ -57,7 +59,7 @@ flowchart LR
 - HTTP API：不新增路径或模型；Saber 生产构建使用 `/api`，入口代理应将 `/api/` 前缀去除后转给 Gateway。
 - Feign：不改接口、Fallback 或服务名。跨主机部署时需核对 Nacos 注册地址可达性。
 - 数据：不改表和 SQL。`infra` 的 MySQL 首次初始化只创建 `blade`、`nacos_config` 及 Nacos 表；`doc/sql/blade` 全量及升级脚本由部署人员按版本执行。
-- Nacos：不改 Data ID；部署前导入对应环境配置，敏感值只在受控环境提供。
+- Nacos：本需求不变更 Data ID 内容；教程补充新认证需导入 blade.yaml、blade-{profile}.yaml 和 blade-authorization-server-{profile}.yaml（DEFAULT_GROUP/对应 namespace），实际新配置与发布影响由 REQ-2026-010 承接，敏感值只在仓库外受控环境提供。
 - 事务、缓存、认证、租户及数据权限：无行为变化。
 - 审计、脱敏：不涉及，无需求依据。
 
@@ -86,5 +88,8 @@ flowchart LR
 
 | 日期 | 版本 | 变更内容 | 修改人 |
 | --- | --- | --- | --- |
+| 2026-10-13 | 0.3 | 对照当前旧认证 Compose 和教程更新，关联新授权 Nacos/固定路由/独立回滚边界；保留原检查证据，本次不执行容器验收 | Codex |
 | 2026-09-29 | 0.2 | 教程结构改为按服务目录，移除整体栈作为教程默认方案 | Codex |
 | 2026-09-29 | 0.1 | 建立 Compose 命名、监听和通用部署流程设计 | Codex |
+| 2026-10-13 | 0.4 | 同步新认证仅安全停流/向前修复边界，区分通用容器恢复与旧auth逆向恢复；保留旧栈证据，不增加运行结果 | Codex |
+| 2026-10-13 | 0.5 | 同步REQ-010新授权服务镜像/Compose、外部JWK、TLS精确代理及网关仅本机探活绑定；两份Compose静态解析通过，运行演练未执行 | Codex |

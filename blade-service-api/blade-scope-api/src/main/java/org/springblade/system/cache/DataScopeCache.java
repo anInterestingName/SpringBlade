@@ -59,6 +59,9 @@ public class DataScopeCache {
 		DataScopeModel dataScope = CacheUtil.get(SYS_CACHE, SCOPE_CACHE_CLASS, mapperId + StringPool.COLON + roleId, DataScopeModel.class);
 		if (dataScope == null || !dataScope.getSearched()) {
 			dataScope = getDataScopeClient().getDataScopeByMapper(mapperId, roleId);
+			if (dataScope == null) {
+				throw new IllegalStateException("数据权限服务返回无效结果");
+			}
 			CacheUtil.put(SYS_CACHE, SCOPE_CACHE_CLASS, mapperId + StringPool.COLON + roleId, dataScope);
 		}
 		return StringUtil.isNotBlank(dataScope.getResourceCode()) ? dataScope : null;
@@ -74,6 +77,9 @@ public class DataScopeCache {
 		DataScopeModel dataScope = CacheUtil.get(SYS_CACHE, SCOPE_CACHE_CODE, code, DataScopeModel.class);
 		if (dataScope == null || !dataScope.getSearched()) {
 			dataScope = getDataScopeClient().getDataScopeByCode(code);
+			if (dataScope == null) {
+				throw new IllegalStateException("数据权限服务返回无效结果");
+			}
 			CacheUtil.put(SYS_CACHE, SCOPE_CACHE_CODE, code, dataScope);
 		}
 		return StringUtil.isNotBlank(dataScope.getResourceCode()) ? dataScope : null;

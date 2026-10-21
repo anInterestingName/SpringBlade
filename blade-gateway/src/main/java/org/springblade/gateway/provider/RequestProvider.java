@@ -40,8 +40,9 @@ public class RequestProvider {
 	 */
 	public static String getOriginalRequestPath(ServerWebExchange exchange) {
 		ServerHttpRequest request = exchange.getRequest();
-		LinkedHashSet<URI> uris = exchange.getRequiredAttribute(ServerWebExchangeUtils.GATEWAY_ORIGINAL_REQUEST_URL_ATTR);
-		URI requestUri = uris.stream().findFirst().orElse(request.getURI());
+		LinkedHashSet<URI> uris = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ORIGINAL_REQUEST_URL_ATTR);
+		// 本地 BFF 路由在早期全局过滤器执行时尚未写入该属性，当前 URI 此时就是原始请求。
+		URI requestUri = uris == null || uris.isEmpty() ? request.getURI() : uris.iterator().next();
 		return requestUri.getRawPath();
 	}
 

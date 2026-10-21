@@ -25,6 +25,7 @@ import org.springblade.core.tool.jackson.Views;
 import org.springblade.system.user.entity.User;
 
 import java.io.Serial;
+import java.util.List;
 
 /**
  * 视图实体类
@@ -49,6 +50,10 @@ public class UserVO extends User {
 	 */
 	@BladeView(Views.Summary.class)
 	private String roleName;
+
+	/** 当前用户角色编码，仅用于资料展示，服务端权限仍独立校验。 */
+	@BladeView(Views.Summary.class)
+	private List<String> roles = List.of();
 
 	/**
 	 * 部门名

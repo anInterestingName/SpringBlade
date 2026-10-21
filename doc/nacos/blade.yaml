@@ -53,11 +53,26 @@ swagger:
 
 #blade配置
 blade:
-  auth:
-    #使用 @org.springblade.test.Sm2KeyGenerator 获取,用于国密sm2验签,需和前端保持一致
-    public-key: ${BLADE_OAUTH2_PUBLIC_KEY}
-    #使用 @org.springblade.test.Sm2KeyGenerator 获取,用于国密sm2解密,前端无需配置
-    private-key: ${BLADE_OAUTH2_PRIVATE_KEY}
+  # 授权与认证中心配置
+  authorization:
+    # 所有业务服务统一使用标准 OAuth2 Resource Server。
+    resource:
+      enabled: ${AUTHORIZATION_RESOURCE_ENABLED:true}
+      issuer: ${AUTHORIZATION_ISSUER:http://127.0.0.1:8100}
+      jwk-set-uri: ${AUTHORIZATION_JWK_SET_URI:${blade.authorization.resource.issuer}/oauth2/jwks}
+      audience: ${AUTHORIZATION_RESOURCE_AUDIENCE:${spring.application.name}}
+      required-scope: ${AUTHORIZATION_RESOURCE_REQUIRED_SCOPE:service.read}
+      skip-url:
+        - /actuator/health/**
+        - /v3/api-docs/**
+        - /swagger-ui/**
+        - /swagger-ui.html
+    client:
+      enabled: ${AUTHORIZATION_CLIENT_ENABLED:true}
+      issuer: ${AUTHORIZATION_ISSUER:http://127.0.0.1:8100}
+      client-id: ${AUTHORIZATION_SERVICE_CLIENT_ID:${spring.application.name}}
+      client-secret: ${AUTHORIZATION_SERVICE_CLIENT_SECRET:}
+      scopes: ${AUTHORIZATION_SERVICE_CLIENT_SCOPES:service.read}
   registration:
     enabled: false
     default-tenant-id: "000000"
@@ -73,11 +88,6 @@ blade:
       tenant-max-attempts: 30
       account-window-seconds: 600
       account-max-attempts: 3
-  token:
-    #使用 @org.springblade.test.SignKeyGenerator 获取
-    sign-key: ${BLADE_TOKEN_SIGN_KEY}
-    #使用 @org.springblade.test.SignKeyGenerator 获取
-    aes-key: ${BLADE_TOKEN_CRYPTO_KEY}
   #jackson配置
   jackson:
     #null自动转空值

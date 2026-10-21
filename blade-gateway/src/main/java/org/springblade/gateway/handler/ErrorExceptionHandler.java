@@ -19,19 +19,17 @@ package org.springblade.gateway.handler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springblade.gateway.provider.ResponseProvider;
+import org.springblade.core.tool.api.R;
 import org.springframework.boot.webflux.error.ErrorWebExceptionHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.MediaType;
-import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.util.Map;
 
 /**
  * 异常处理
@@ -47,7 +45,6 @@ public class ErrorExceptionHandler implements ErrorWebExceptionHandler {
 
 	@Override
 	public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
-		ServerHttpRequest request = exchange.getRequest();
 		ServerHttpResponse response = exchange.getResponse();
 
 		if (response.isCommitted()) {
@@ -55,9 +52,9 @@ public class ErrorExceptionHandler implements ErrorWebExceptionHandler {
 		}
 
 		response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-		if (ex instanceof ResponseStatusException) {
-			response.setStatusCode(((ResponseStatusException) ex).getStatusCode());
-		}
+		response.getHeaders().setCacheControl("no-store");
+		response.setStatusCode(ex instanceof ResponseStatusException error
+			? error.getStatusCode() : HttpStatus.INTERNAL_SERVER_ERROR);
 
 		return response.writeWith(Mono.fromSupplier(() -> {
 			DataBufferFactory bufferFactory = response.bufferFactory();
@@ -66,30 +63,12 @@ public class ErrorExceptionHandler implements ErrorWebExceptionHandler {
 				if (response.getStatusCode() != null) {
 					status = response.getStatusCode().value();
 				}
-				Map<String, Object> result = ResponseProvider.response(status, this.buildMessage(request, ex));
+				// 授权回调含 code/state，错误响应不回显请求 URI、查询串或上游异常内容。
+				R<?> result = R.fail(status, status == 404 ? "接口不存在" : "请求处理失败，请检查服务状态");
 				return bufferFactory.wrap(objectMapper.writeValueAsBytes(result));
 			} catch (JsonProcessingException e) {
 				return bufferFactory.wrap(new byte[0]);
 			}
 		}));
 	}
-
-
-	/**
-	 * 构建异常信息
-	 */
-	private String buildMessage(ServerHttpRequest request, Throwable ex) {
-		StringBuilder message = new StringBuilder("Failed to handle request [");
-		message.append(request.getMethod().name());
-		message.append(" ");
-		message.append(request.getURI());
-		message.append("]");
-		if (ex != null) {
-			message.append(": ");
-			message.append(ex.getMessage());
-		}
-		return message.toString();
-	}
-
-
 }

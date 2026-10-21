@@ -1,0 +1,274 @@
+{
+  "ExecutedAtUtc": "2026-10-13T06:35:37.8763492Z",
+  "ScriptVersion": "0.9",
+  "DataPrefix": "auth-rq10-20261013063454-",
+  "PowerShell": "7.6.6",
+  "Results": [
+    {
+      "Id": "TC-001",
+      "Description": "构建与敏感配置门禁",
+      "Status": "BLOCK",
+      "Details": "目标模块离线编译及认证配置检查通过；clean package 尚未执行"
+    },
+    {
+      "Id": "TC-002",
+      "Description": "Discovery 与 JWKS 公钥边界",
+      "Status": "PASS",
+      "Details": "Discovery HTTP 200、issuer/端点/S256 匹配；JWKS 1 个 RSA 公钥，无私钥字段"
+    },
+    {
+      "Id": "TC-003",
+      "Description": "客户端管理校验入口",
+      "Status": "BLOCK",
+      "Details": "真实管理员客户端管理入口已验证；创建/非法配置/重复键/数据库副作用需独立客户端夹具与精确清理，不以禁用的动态注册端点 404 代替"
+    },
+    {
+      "Id": "TC-004",
+      "Description": "授权码与 PKCE 正常流程",
+      "Status": "PASS",
+      "Details": "授权码、state、S256 PKCE、用户资源、UserInfo 和 BFF 回调会话实际验证通过"
+    },
+    {
+      "Id": "TC-005",
+      "Description": "PKCE、回调与授权码一次性",
+      "Status": "BLOCK",
+      "Details": "错误 verifier、错误回调、code 重放已通过；跨客户端、缺失/超长 verifier 和过期 code 夹具待准备"
+    },
+    {
+      "Id": "TC-006",
+      "Description": "真实密码与租户拒绝",
+      "Status": "BLOCK",
+      "Details": "携带有效 CSRF 的错误密码、越租户登录确实到达凭据校验并拒绝；正常登录成功；旧摘要迁移/停用用户/租户夹具待准备"
+    },
+    {
+      "Id": "TC-007",
+      "Description": "限流、TTL 和可信来源",
+      "Status": "BLOCK",
+      "Details": "未提供独立测试来源与限流计数清理夹具；不对共享本地 IP 连续失败以免锁定其他用户；不再无条件 PASS"
+    },
+    {
+      "Id": "TC-008",
+      "Description": "client_credentials 与 scope",
+      "Status": "PASS",
+      "Details": "实际服务令牌签发=200、非法 scope=400/invalid_scope、资源读取=200、缺 scope=403、错误 audience=401"
+    },
+    {
+      "Id": "TC-009",
+      "Description": "Refresh Token 轮换与令牌族重用",
+      "Status": "BLOCK",
+      "Details": "真实刷新轮换、旧值 invalid_grant、重用后后继失效已验证；停用用户/租户夹具待准备"
+    },
+    {
+      "Id": "TC-010",
+      "Description": "撤销与内省",
+      "Status": "PASS",
+      "Details": "Access/Refresh 实际撤销、内省 active=false、刷新拒绝；资源 HTTP 200（离线 JWT 可持续到 exp）"
+    },
+    {
+      "Id": "TC-011",
+      "Description": "BFF 会话隔离与 no-store",
+      "Status": "BLOCK",
+      "Details": "同用户两个独立 BFF Cookie、HttpOnly、三类响应 no-store、无 Token、退出不影响另一会话均实测通过；不同用户夹具待准备"
+    },
+    {
+      "Id": "TC-012",
+      "Description": "BFF CSRF 与退出",
+      "Status": "BLOCK",
+      "Details": "真实 BFF 缺失 CSRF=403、退出=200、退出后=401、重复退出已验证；拒绝同意和过期回调恢复待执行"
+    },
+    {
+      "Id": "TC-013",
+      "Description": "资源端 JWT 拒绝与正常访问",
+      "Status": "BLOCK",
+      "Details": "有效 JWT=200、无 Token/格式错误/签名篡改=401 已验证；独立有效签名的错误 issuer/exp/nbf 夹具待准备，scope/audience 已由 TC-008 实测"
+    },
+    {
+      "Id": "TC-014",
+      "Description": "网关旧路由和内部隔离",
+      "Status": "BLOCK",
+      "Details": "真实网关登录后内部接口 403、未知路径 404、system 旧路由已验证；其他未启动服务的路由回归待执行"
+    },
+    {
+      "Id": "TC-015",
+      "Description": "内部契约 scope 与依赖降级",
+      "Status": "BLOCK",
+      "Details": "真实内部接口 scope 不足=403，两份实际认证 Fallback 静态 fail-closed 通过；system 停机/超时/错误结构故障注入待执行"
+    },
+    {
+      "Id": "TC-016",
+      "Description": "MySQL/Redis 故障恢复",
+      "Status": "BLOCK",
+      "Details": "未对共享测试基础设施执行停机/故障注入；独立实例、快照和恢复夹具待准备，配置存在不能证明恢复通过"
+    },
+    {
+      "Id": "TC-017",
+      "Description": "外部 JWK 文件与错误启动配置",
+      "Status": "BLOCK",
+      "Details": "外部 JWK 文件与实际 JWKS kid 已匹配；错误权限/kid/算法/长度的隔离启动与替换重启尚未执行"
+    },
+    {
+      "Id": "TC-018",
+      "Description": "落盘密文与敏感日志",
+      "Status": "BLOCK",
+      "Details": "实际 AuthorizationCodec 的 AES-GCM/v1 静态检查通过；MySQL/Redis 本轮数据与运行日志尚未取证，不以源码关键字替代落盘检查；不涉及脱敏功能建设"
+    },
+    {
+      "Id": "TC-019",
+      "Description": "MySQL 全量、升级、幂等与回滚",
+      "Status": "BLOCK",
+      "Details": "两份 SQL 客户端摘要格式静态检查通过；独立空库/存量快照、真实重复执行与回滚未执行"
+    },
+    {
+      "Id": "TC-020",
+      "Description": "真实授权码和刷新并发",
+      "Status": "BLOCK",
+      "Details": "同一真实 code 和 Refresh Token 各 4 个并发请求，均严格 1 个 200、3 个 invalid_grant；容量/P95/延迟故障注入待执行"
+    },
+    {
+      "Id": "TC-021",
+      "Description": "健康、指标与告警",
+      "Status": "BLOCK",
+      "Details": "健康端点实际 UP；认证分类指标、依赖延迟、刷新重用告警与故障观测尚未执行"
+    },
+    {
+      "Id": "TC-022",
+      "Description": "双版本灰度和回滚",
+      "Status": "BLOCK",
+      "Details": "未切换用户正在使用的应用版本；可回滚部署夹具和独立入口待准备，配置存在不能证明演练通过"
+    },
+    {
+      "Id": "TC-023",
+      "Description": "TokenRelay 与伪造身份头",
+      "Status": "BLOCK",
+      "Details": "真实 BFF TokenRelay 与伪造头不覆盖身份、直连无 Token=401 已验证；全部资源服务的独立校验矩阵待执行"
+    },
+    {
+      "Id": "TC-024",
+      "Description": "Feign 用户与服务 Token 传播",
+      "Status": "BLOCK",
+      "Details": "公共 Feign 多 scope 注册静态检查通过；真实 HTTP 用户调用和无请求上下文后台 Feign 调用探针待准备"
+    },
+    {
+      "Id": "TC-025",
+      "Description": "JWT 与现有 BladeUser 权限字段",
+      "Status": "BLOCK",
+      "Details": "JWT 基础权限字段、BladeUser Controller 和角色菜单已验证；数据权限算法与跨租户回归待执行"
+    }
+  ],
+  "Cleanup": {
+    "Failed": 0,
+    "Fingerprints": [
+      {
+        "Cleared": true,
+        "Hint": "access_token",
+        "ClientId": "demo-service",
+        "Sha256": "d50754c4b9f12da205bf90c4a2494f2b030289c5f6aa6fb1ec41812ef3afbeac"
+      },
+      {
+        "Cleared": true,
+        "Hint": "access_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "8bb73d559c88aaf97760c43c58551015dc5472db2f4b88793449a0d9c3809c54"
+      },
+      {
+        "Cleared": true,
+        "Hint": "refresh_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "1b6e0e70f510aab153245113c48d5784c25fcacc4401845d8e9791a683dcd1b2"
+      },
+      {
+        "Cleared": true,
+        "Hint": "access_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "f288c827acac0cb4d248bc01c2d9bbb014781b4db1f4f3241209773bd44a3f1a"
+      },
+      {
+        "Cleared": true,
+        "Hint": "refresh_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "9ed83a388983ccf26b6839fd1a8ece0f163a1a7b390f9480e2019a7d7de30571"
+      },
+      {
+        "Cleared": true,
+        "Hint": "access_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "dc03e41dc2c9bd7fdf8a454099bbd82020740f59f1cc780203c0b60d140c5ed9"
+      },
+      {
+        "Cleared": true,
+        "Hint": "refresh_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "b9df137482c4e0b6e57d6404c332beee9457c5852b7ad0e4f0f471e076756f24"
+      },
+      {
+        "Cleared": true,
+        "Hint": "access_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "74bbb63809d4b8c2608454545bcd46ea25735a80d1bf7ce54a799b24ff26265f"
+      },
+      {
+        "Cleared": true,
+        "Hint": "refresh_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "1b2f7f72dafe8159f90df803853a34ba801b87cc6ef629abbb903964e7b35aca"
+      },
+      {
+        "Cleared": true,
+        "Hint": "access_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "6c35fae23c43676719d5792150690ad836d52278e047242697b082229056156c"
+      },
+      {
+        "Cleared": true,
+        "Hint": "refresh_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "584270ff48ccfea0f20a522b9337a1ebe8818c73797fa7a329bca120f2d92846"
+      },
+      {
+        "Cleared": true,
+        "Hint": "access_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "e4e33cc494693254a8c9dff5e8fac0004177e02086efff290d9896772f5a8e75"
+      },
+      {
+        "Cleared": true,
+        "Hint": "refresh_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "63ee8e45b312dfe57f19031cdd010541f47d9f10c8262603944b7a1457aa73c4"
+      },
+      {
+        "Cleared": true,
+        "Hint": "access_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "568c8ee41019083b6e873047c9e214fac4d1ee5eb4cb30ae2d4b99c6f0151116"
+      },
+      {
+        "Cleared": true,
+        "Hint": "refresh_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "0effafe7fa134c5f471f1dadb6a2887d0e11a23ae9c2f0673a2b4c58763c2b55"
+      },
+      {
+        "Cleared": true,
+        "Hint": "access_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "635ff79a88991c6cc2e61934c92a65ecc7c262595aa51aeac439445785698bf8"
+      },
+      {
+        "Cleared": true,
+        "Hint": "refresh_token",
+        "ClientId": "gateway-bff",
+        "Sha256": "2a95a65b457cbaad7e283eddd07db5e00ef49a326d75e98c895a3536e829376b"
+      }
+    ],
+    "Registered": 17
+  },
+  "SessionCleanup": {
+    "Failed": 0,
+    "Method": "仅删除本轮内存 Cookie 对应的固定 namespace/UUID 键并确认不存在；不扫描或清空其他会话",
+    "OwnedSessions": 9,
+    "CheckedKeys": 18
+  },
+  "LogoutCleanupFailures": null,
+  "SessionCleanupFailed": false
+}

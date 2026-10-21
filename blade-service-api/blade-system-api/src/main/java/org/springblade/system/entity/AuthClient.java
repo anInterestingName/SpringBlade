@@ -1,12 +1,9 @@
-/**
- * Copyright (c) 2018-2099, Chill Zhuang 庄骞 (bladejava@qq.com).
- * <p>
+/*
+ * Copyright 2026 SpringBlade contributors.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ * https://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,96 +12,69 @@
  */
 package org.springblade.system.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springblade.core.mp.base.BaseEntity;
-
 import java.io.Serial;
 
 /**
- * 实体类
+ * OAuth2/OIDC 客户端主数据，由现有应用管理维护。
  *
- * @author BladeX
- * @since 2019-03-24
+ * @author SpringBlade
  */
 @Data
-@TableName("blade_client")
 @EqualsAndHashCode(callSuper = true)
-@Schema(description = "Client对象")
+@TableName("blade_client")
+@Schema(description = "OAuth2/OIDC 客户端")
 public class AuthClient extends BaseEntity {
-
 	@Serial
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * 主键id
-	 */
-	@Schema(description = "主键")
-	@TableId(value = "id", type = IdType.ASSIGN_ID)
-	@JsonSerialize(using = ToStringSerializer.class)
-	private Long id;
-
-	/**
-	 * 客户端id
-	 */
-	@Schema(description = "客户端id")
+	@Schema(description = "客户端标识")
 	private String clientId;
-	/**
-	 * 客户端密钥
-	 */
-	@Schema(description = "客户端密钥")
+
+	@Schema(description = "客户端名称")
+	private String clientName;
+
+	@Schema(description = "客户端密钥，仅接收写入")
+	@TableField(updateStrategy = FieldStrategy.ALWAYS)
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	@ToString.Exclude
 	private String clientSecret;
-	/**
-	 * 资源集合
-	 */
-	@Schema(description = "资源集合")
-	private String resourceIds;
-	/**
-	 * 授权范围
-	 */
-	@Schema(description = "授权范围")
-	private String scope;
-	/**
-	 * 授权类型
-	 */
-	@Schema(description = "授权类型")
-	private String authorizedGrantTypes;
-	/**
-	 * 回调地址
-	 */
-	@Schema(description = "回调地址")
-	private String webServerRedirectUri;
-	/**
-	 * 权限
-	 */
-	@Schema(description = "权限")
-	private String authorities;
-	/**
-	 * 令牌过期秒数
-	 */
-	@Schema(description = "令牌过期秒数")
-	private Integer accessTokenValidity;
-	/**
-	 * 刷新令牌过期秒数
-	 */
-	@Schema(description = "刷新令牌过期秒数")
-	private Integer refreshTokenValidity;
-	/**
-	 * 附加说明
-	 */
-	@Schema(description = "附加说明")
-	private String additionalInformation;
-	/**
-	 * 自动授权
-	 */
-	@Schema(description = "自动授权")
-	private String autoapprove;
 
+	@Schema(description = "客户端认证方式，逗号分隔")
+	private String clientAuthenticationMethods;
 
+	@Schema(description = "授权类型，逗号分隔")
+	private String grantTypes;
+
+	@Schema(description = "精确回调地址，逗号分隔")
+	private String redirectUris;
+
+	@Schema(description = "授权范围，逗号分隔")
+	private String scopes;
+
+	@Schema(description = "目标资源服务，逗号分隔")
+	private String audiences;
+
+	@Schema(description = "访问令牌有效期，秒")
+	private Integer accessTokenTtl;
+
+	@Schema(description = "刷新令牌有效期，秒")
+	private Integer refreshTokenTtl;
+
+	@Schema(description = "要求 PKCE")
+	private Boolean requireProofKey;
+
+	@Schema(description = "要求用户确认授权")
+	private Boolean requireAuthorizationConsent;
+
+	@Schema(description = "复用刷新令牌")
+	private Boolean reuseRefreshTokens;
 }

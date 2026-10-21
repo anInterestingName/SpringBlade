@@ -1,14 +1,16 @@
 server:
-  port: 80
+  port: ${BFF_PORT:80}
 
 spring:
   cloud:
+    discovery:
+      enabled: ${GATEWAY_LEGACY_ROUTING_ENABLED:false}
     gateway:
       server:
         webflux:
           discovery:
             locator:
-              enabled: true
+              enabled: ${GATEWAY_LEGACY_ROUTING_ENABLED:false}
     loadbalancer:
       retry:
         enabled: true

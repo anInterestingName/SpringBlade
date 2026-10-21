@@ -1,0 +1,69 @@
+server:
+  address: ${AUTHORIZATION_BIND_ADDRESS:127.0.0.1}
+  port: ${AUTHORIZATION_PORT:8100}
+  error:
+    include-message: never
+    include-stacktrace: never
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        name: AUTH_SESSION
+        http-only: true
+        same-site: lax
+        secure: ${AUTHORIZATION_COOKIE_SECURE:false}
+
+spring:
+  application:
+    name: blade-authorization-server
+  autoconfigure:
+    exclude:
+      - org.springblade.common.security.config.StandardTokenResourceServerAutoConfiguration
+      - org.springblade.common.security.feign.ServiceTokenFeignConfiguration
+  cloud:
+    nacos:
+      config:
+        enabled: true
+        group: DEFAULT_GROUP
+        file-extension: yaml
+        refresh-enabled: false
+      discovery:
+        enabled: true
+        group: DEFAULT_GROUP
+    openfeign:
+      client:
+        config:
+          userAuthenticationClient:
+            connectTimeout: 3000
+            readTimeout: 5000
+            loggerLevel: none
+          clientRegistrationClient:
+            connectTimeout: 3000
+            readTimeout: 5000
+            loggerLevel: none
+
+blade:
+  authorization:
+    resource:
+      enabled: false
+    client:
+      enabled: false
+feign:
+  sentinel:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: never
+      group:
+        readiness:
+          include: readinessState,db,redis
+      probes:
+        enabled: true
+
+

@@ -25,7 +25,7 @@
     </properties>
 
     <modules>
-        <module>blade-auth</module>
+        <module>blade-authorization-server</module>
         <module>blade-gateway</module>
         <module>blade-ops</module>
         <module>blade-service</module>

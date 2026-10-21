@@ -12,16 +12,18 @@
         <result column="status" property="status"/>
         <result column="is_deleted" property="isDeleted"/>
         <result column="client_id" property="clientId"/>
+        <result column="client_name" property="clientName"/>
         <result column="client_secret" property="clientSecret"/>
-        <result column="resources_ids" property="resourceIds"/>
-        <result column="scope" property="scope"/>
-        <result column="authorized_grant_types" property="authorizedGrantTypes"/>
-        <result column="web_server_redirect_uri" property="webServerRedirectUri"/>
-        <result column="authorities" property="authorities"/>
-        <result column="access_token_validity" property="accessTokenValidity"/>
-        <result column="refresh_token_validity" property="refreshTokenValidity"/>
-        <result column="additional_information" property="additionalInformation"/>
-        <result column="autoapprove" property="autoapprove"/>
+        <result column="client_authentication_methods" property="clientAuthenticationMethods"/>
+        <result column="grant_types" property="grantTypes"/>
+        <result column="redirect_uris" property="redirectUris"/>
+        <result column="scopes" property="scopes"/>
+        <result column="audiences" property="audiences"/>
+        <result column="access_token_ttl" property="accessTokenTtl"/>
+        <result column="refresh_token_ttl" property="refreshTokenTtl"/>
+        <result column="require_proof_key" property="requireProofKey"/>
+        <result column="require_authorization_consent" property="requireAuthorizationConsent"/>
+        <result column="reuse_refresh_tokens" property="reuseRefreshTokens"/>
     </resultMap>
 
 </mapper>

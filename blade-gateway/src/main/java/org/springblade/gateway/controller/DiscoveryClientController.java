@@ -22,6 +22,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.Map;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/discovery")
+@ConditionalOnProperty(name = "spring.cloud.discovery.enabled", havingValue = "true")
 public class DiscoveryClientController {
 
 	private final DiscoveryClient discoveryClient;

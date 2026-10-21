@@ -1,0 +1,3 @@
+org.springblade.common.security.config.StandardTokenResourceServerAutoConfiguration
+org.springblade.common.security.feign.ServiceTokenFeignConfiguration
+

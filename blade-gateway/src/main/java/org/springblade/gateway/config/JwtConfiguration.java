@@ -30,7 +30,6 @@ import org.springframework.context.annotation.Configuration;
  * @author Chill
  */
 @Slf4j
-@Configuration(proxyBeanMethods = false)
 @AllArgsConstructor
 @EnableConfigurationProperties({JwtProperties.class})
 public class JwtConfiguration implements SmartInitializingSingleton {

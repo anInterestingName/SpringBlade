@@ -1,5 +1,11 @@
 #服务器端口
 server:
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      internal-proxies: ${AUTHORIZATION_TRUSTED_PROXY_PATTERN:127\.0\.0\.1|::1}
+      remote-ip-header: X-Forwarded-For
+      protocol-header: X-Forwarded-Proto
   port: 8106
 
 #数据源配置

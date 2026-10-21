@@ -21,35 +21,110 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Table structure for blade_client
 -- ----------------------------
 DROP TABLE IF EXISTS `blade_client`;
-CREATE TABLE `blade_client`  (
-  `id` bigint NOT NULL COMMENT '主键',
-  `client_id` varchar(48) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '客户端id',
-  `client_secret` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '客户端密钥',
-  `resource_ids` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '资源集合',
-  `scope` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '授权范围',
-  `authorized_grant_types` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '授权类型',
-  `web_server_redirect_uri` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '回调地址',
-  `authorities` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '权限',
-  `access_token_validity` int NOT NULL COMMENT '令牌过期秒数',
-  `refresh_token_validity` int NOT NULL COMMENT '刷新令牌过期秒数',
-  `additional_information` varchar(4096) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '附加说明',
-  `autoapprove` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '自动授权',
-  `create_user` bigint NULL DEFAULT NULL COMMENT '创建人',
-  `create_dept` bigint NULL DEFAULT NULL COMMENT '创建部门',
-  `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
-  `update_user` bigint NULL DEFAULT NULL COMMENT '修改人',
-  `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
-  `status` int NOT NULL COMMENT '状态',
-  `is_deleted` int NOT NULL COMMENT '是否已删除',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '客户端表';
+CREATE TABLE `blade_client` (
+  `id` bigint NOT NULL COMMENT '雪花主键',
+  `client_id` varchar(48) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '客户端标识',
+  `client_name` varchar(100) NOT NULL COMMENT '客户端名称',
+  `client_secret` varchar(256) DEFAULT NULL COMMENT 'BCrypt密钥摘要，公共客户端为空',
+  `client_authentication_methods` varchar(100) NOT NULL COMMENT '客户端认证方式',
+  `grant_types` varchar(256) NOT NULL COMMENT 'OAuth2授权类型',
+  `redirect_uris` varchar(2048) DEFAULT NULL COMMENT '精确回调地址，逗号分隔',
+  `scopes` varchar(1024) NOT NULL COMMENT '授权范围，逗号分隔',
+  `audiences` varchar(1024) NOT NULL COMMENT '目标资源服务，逗号分隔',
+  `access_token_ttl` int NOT NULL DEFAULT 300 COMMENT '访问令牌有效秒数',
+  `refresh_token_ttl` int NOT NULL DEFAULT 1800 COMMENT '刷新令牌有效秒数',
+  `require_proof_key` tinyint(1) NOT NULL DEFAULT 1 COMMENT '要求PKCE',
+  `require_authorization_consent` tinyint(1) NOT NULL DEFAULT 1 COMMENT '要求用户授权确认',
+  `reuse_refresh_tokens` tinyint(1) NOT NULL DEFAULT 0 COMMENT '复用刷新令牌，必须关闭',
+  `create_user` bigint DEFAULT NULL COMMENT '创建人',
+  `create_dept` bigint DEFAULT NULL COMMENT '创建部门',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_user` bigint DEFAULT NULL COMMENT '修改人',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `status` int NOT NULL DEFAULT 1 COMMENT '状态',
+  `is_deleted` int NOT NULL DEFAULT 0 COMMENT '是否已删除',
+  `active_client_id` varchar(48) CHARACTER SET ascii COLLATE ascii_bin GENERATED ALWAYS AS (CASE WHEN `is_deleted` = 0 THEN `client_id` ELSE NULL END) STORED COMMENT '有效客户端唯一标识',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_client_active_id` (`active_client_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='OAuth2/OIDC客户端';
+
+-- OAuth2协议状态表
+CREATE TABLE IF NOT EXISTS `blade_oauth2_authorization` (
+  `id` bigint NOT NULL COMMENT '雪花主键',
+  `authorization_id` varchar(100) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '协议授权编号',
+  `registered_client_id` bigint NOT NULL COMMENT '客户端主键',
+  `principal_name` varchar(200) NOT NULL COMMENT '稳定用户主体或客户端标识',
+  `grant_type` varchar(100) NOT NULL COMMENT '授权类型',
+  `authorized_scopes` varchar(1024) NOT NULL COMMENT '已授权范围',
+  `payload` mediumtext NOT NULL COMMENT '授权上下文和令牌状态，AES-GCM信封密文，仅授权服务器读取',
+  `state_hash` char(64) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL COMMENT 'state的SHA256',
+  `authorization_code_hash` char(64) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL COMMENT '授权码的SHA256',
+  `access_token_hash` char(64) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL COMMENT '访问令牌的SHA256',
+  `refresh_token_hash` char(64) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL COMMENT '刷新令牌的SHA256',
+  `id_token_hash` char(64) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL COMMENT '身份令牌的SHA256',
+  `expires_at` datetime(6) NOT NULL COMMENT '最晚状态到期时间',
+  `tenant_id` varchar(12) DEFAULT NULL COMMENT '用户租户，客户端凭据授权为空',
+  `create_user` bigint DEFAULT NULL COMMENT '创建人',
+  `create_dept` bigint DEFAULT NULL COMMENT '创建部门',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_user` bigint DEFAULT NULL COMMENT '修改人',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `status` int NOT NULL DEFAULT 1 COMMENT '状态',
+  `is_deleted` int NOT NULL DEFAULT 0 COMMENT '是否已删除',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_authorization_id` (`authorization_id`),
+  KEY `idx_authorization_state` (`state_hash`),
+  KEY `idx_authorization_code` (`authorization_code_hash`),
+  KEY `idx_authorization_access` (`access_token_hash`),
+  KEY `idx_authorization_refresh` (`refresh_token_hash`),
+  KEY `idx_authorization_id_token` (`id_token_hash`),
+  KEY `idx_authorization_expiry` (`expires_at`),
+  KEY `idx_authorization_owner` (`tenant_id`, `principal_name`, `registered_client_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='OAuth2授权状态';
+
+CREATE TABLE IF NOT EXISTS `blade_oauth2_authorization_consent` (
+  `id` bigint NOT NULL COMMENT '雪花主键',
+  `registered_client_id` bigint NOT NULL COMMENT '客户端主键',
+  `principal_name` varchar(200) NOT NULL COMMENT '稳定用户主体',
+  `authorities` varchar(2048) NOT NULL COMMENT '已确认授权范围',
+  `tenant_id` varchar(12) NOT NULL COMMENT '用户租户',
+  `create_user` bigint DEFAULT NULL COMMENT '创建人',
+  `create_dept` bigint DEFAULT NULL COMMENT '创建部门',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_user` bigint DEFAULT NULL COMMENT '修改人',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `status` int NOT NULL DEFAULT 1 COMMENT '状态',
+  `is_deleted` int NOT NULL DEFAULT 0 COMMENT '是否已删除',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_consent_client_principal` (`registered_client_id`, `principal_name`),
+  KEY `idx_consent_tenant` (`tenant_id`, `principal_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='OAuth2用户授权同意';
 
 -- ----------------------------
 -- Records of blade_client
 -- ----------------------------
-BEGIN;
-INSERT INTO `blade_client` (`id`, `client_id`, `client_secret`, `resource_ids`, `scope`, `authorized_grant_types`, `web_server_redirect_uri`, `authorities`, `access_token_validity`, `refresh_token_validity`, `additional_information`, `autoapprove`, `create_user`, `create_dept`, `create_time`, `update_user`, `update_time`, `status`, `is_deleted`) VALUES (1123598811738675201, 'sword', 'sword_secret', NULL, 'all', 'refresh_token,password,authorization_code', 'http://localhost:8888', NULL, 3600, 604800, NULL, NULL, 1, 1123598813738675201, '2019-03-24 10:40:55', 1, '2019-03-24 10:40:59', 1, 0), (1123598811738675202, 'saber', 'saber_secret', NULL, 'all', 'refresh_token,password,authorization_code', 'http://localhost:8080', NULL, 3600, 604800, NULL, NULL, 1, 1123598813738675201, '2019-03-24 10:42:29', 1, '2019-03-24 10:42:32', 1, 0);
-COMMIT;
+CREATE TABLE IF NOT EXISTS `blade_oauth2_refresh_token` (
+  `id` bigint NOT NULL COMMENT '雪花主键',
+  `token_hash` char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '刷新令牌SHA256，不保存令牌原文',
+  `authorization_id` varchar(100) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '所属授权编号与刷新令牌族',
+  `expires_at` datetime(6) NOT NULL COMMENT '该刷新令牌原始到期时间',
+  `tenant_id` varchar(12) DEFAULT NULL COMMENT '用户租户',
+  `create_user` bigint DEFAULT NULL COMMENT '创建人',
+  `create_dept` bigint DEFAULT NULL COMMENT '创建部门',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_user` bigint DEFAULT NULL COMMENT '修改人',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `status` int NOT NULL DEFAULT 1 COMMENT '状态',
+  `is_deleted` int NOT NULL DEFAULT 0 COMMENT '是否已删除',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_refresh_token_hash` (`token_hash`),
+  KEY `idx_refresh_authorization` (`authorization_id`),
+  KEY `idx_refresh_expiry` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='OAuth2刷新令牌归属与重用状态';
+
+-- BFF 仅预登记为停用客户端；发布时通过应用管理配置仓库外原始密钥并启用，禁止共享默认密钥。
+INSERT INTO `blade_client` (`id`, `client_id`, `client_name`, `client_secret`, `client_authentication_methods`, `grant_types`, `redirect_uris`, `scopes`, `audiences`, `access_token_ttl`, `refresh_token_ttl`, `require_proof_key`, `require_authorization_consent`, `reuse_refresh_tokens`, `create_user`, `create_dept`, `create_time`, `update_user`, `update_time`, `status`, `is_deleted`) VALUES
+(2108451995948937201, 'gateway-bff', '网关BFF客户端', NULL, 'client_secret_basic', 'authorization_code,refresh_token', 'http://127.0.0.1:2888/login/oauth2/code/blade', 'openid,profile,demo.read,demo.write,service.read', 'blade-demo,blade-system,blade-desk,blade-ai,blade-log,blade-resource,blade-develop,blade-report', 300, 1800, 1, 1, 0, 1123598821738675201, 1123598821738675201, '2026-10-10 00:00:00', 1123598821738675201, '2026-10-10 00:00:00', 0, 0);
 
 -- ----------------------------
 -- Table structure for blade_code
@@ -746,7 +821,7 @@ CREATE TABLE `blade_user`  (
   `tenant_id` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '000000' COMMENT '租户ID',
   `code` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '用户编号',
   `account` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '账号',
-  `password` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '密码',
+  `password` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '密码',
   `name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '昵称',
   `real_name` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '真名',
   `avatar` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '头像',

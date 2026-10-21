@@ -19,7 +19,7 @@ package org.springblade.gateway.config;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springblade.gateway.filter.GatewayFilter;
-import org.springblade.gateway.props.AuthProperties;
+import org.springblade.gateway.filter.InnerFilter;
 import org.springblade.gateway.props.RequestProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -34,7 +34,7 @@ import org.springframework.web.server.WebFilter;
 @Slf4j
 @Configuration(proxyBeanMethods = false)
 @AllArgsConstructor
-@EnableConfigurationProperties({AuthProperties.class, RequestProperties.class})
+@EnableConfigurationProperties(RequestProperties.class)
 public class RouterFunctionConfiguration {
 
 	/**
@@ -43,6 +43,11 @@ public class RouterFunctionConfiguration {
 	@Bean
 	public WebFilter gatewayFilter(RequestProperties requestProperties) {
 		return new GatewayFilter(requestProperties);
+	}
+
+	@Bean
+	public InnerFilter innerFilter(com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
+		return new InnerFilter(objectMapper);
 	}
 
 }

@@ -1,0 +1,369 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] SpringBlade                                                        [pom]
+[INFO] blade-common                                                       [jar]
+[INFO] blade-service-api                                                  [pom]
+[INFO] blade-user-api                                                     [jar]
+[INFO] blade-system-api                                                   [jar]
+[INFO] blade-authorization-server                                         [jar]
+[INFO] blade-gateway                                                      [jar]
+[INFO] blade-ops                                                          [pom]
+[INFO] blade-admin                                                        [jar]
+[INFO] blade-dict-api                                                     [jar]
+[INFO] blade-scope-api                                                    [jar]
+[INFO] blade-service                                                      [pom]
+[INFO] blade-system                                                       [jar]
+[INFO] blade-demo-api                                                     [jar]
+[INFO] blade-demo                                                         [jar]
+[INFO] 
+[INFO] --------------------< org.springblade:SpringBlade >---------------------
+[INFO] Building SpringBlade 5.0.1                                        [1/15]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ SpringBlade ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ SpringBlade ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ SpringBlade ---
+[INFO] Generating flattened POM of project org.springblade:SpringBlade:pom:5.0.1...
+[INFO] 
+[INFO] --------------------< org.springblade:blade-common >--------------------
+[INFO] Building blade-common 5.0.1                                       [2/15]
+[INFO]   from blade-common\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-common ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-common ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-common ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-common ---
+[INFO] Generating flattened POM of project org.springblade:blade-common:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-common ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] -----------------< org.springblade:blade-service-api >------------------
+[INFO] Building blade-service-api 5.0.1                                  [3/15]
+[INFO]   from blade-service-api\pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-service-api ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-service-api ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-service-api ---
+[INFO] Generating flattened POM of project org.springblade:blade-service-api:pom:5.0.1...
+[INFO] 
+[INFO] -------------------< org.springblade:blade-user-api >-------------------
+[INFO] Building blade-user-api 5.0.1                                     [4/15]
+[INFO]   from blade-service-api\blade-user-api\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-user-api ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-user-api ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-user-api ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory D:\workspace\project\SpringBlade\blade-service-api\blade-user-api\src\main\resources
+[INFO] Copying 1 resource from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-user-api ---
+[INFO] Generating flattened POM of project org.springblade:blade-user-api:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-user-api ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] ------------------< org.springblade:blade-system-api >------------------
+[INFO] Building blade-system-api 5.0.1                                   [5/15]
+[INFO]   from blade-service-api\blade-system-api\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-system-api ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-system-api ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-system-api ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory D:\workspace\project\SpringBlade\blade-service-api\blade-system-api\src\main\resources
+[INFO] Copying 1 resource from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-system-api ---
+[INFO] Generating flattened POM of project org.springblade:blade-system-api:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-system-api ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] -------------< org.springblade:blade-authorization-server >-------------
+[INFO] Building blade-authorization-server 5.0.1                         [6/15]
+[INFO]   from blade-authorization-server\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-authorization-server ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-authorization-server ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-authorization-server ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-authorization-server ---
+[INFO] Generating flattened POM of project org.springblade:blade-authorization-server:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-authorization-server ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] -------------------< org.springblade:blade-gateway >--------------------
+[INFO] Building blade-gateway 5.0.1                                      [7/15]
+[INFO]   from blade-gateway\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-gateway ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-gateway ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-gateway ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] Copying 5 resources from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-gateway ---
+[INFO] Generating flattened POM of project org.springblade:blade-gateway:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-gateway ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] ---------------------< org.springblade:blade-ops >----------------------
+[INFO] Building blade-ops 5.0.1                                          [8/15]
+[INFO]   from blade-ops\pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-ops ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-ops ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-ops ---
+[INFO] Generating flattened POM of project org.springblade:blade-ops:pom:5.0.1...
+[INFO] 
+[INFO] --------------------< org.springblade:blade-admin >---------------------
+[INFO] Building blade-admin 5.0.1                                        [9/15]
+[INFO]   from blade-ops\blade-admin\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-admin ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-admin ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-admin ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] Copying 6 resources from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-admin ---
+[INFO] Generating flattened POM of project org.springblade:blade-admin:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-admin ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] -------------------< org.springblade:blade-dict-api >-------------------
+[INFO] Building blade-dict-api 5.0.1                                    [10/15]
+[INFO]   from blade-service-api\blade-dict-api\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-dict-api ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-dict-api ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-dict-api ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory D:\workspace\project\SpringBlade\blade-service-api\blade-dict-api\src\main\resources
+[INFO] Copying 1 resource from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-dict-api ---
+[INFO] Generating flattened POM of project org.springblade:blade-dict-api:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-dict-api ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] ------------------< org.springblade:blade-scope-api >-------------------
+[INFO] Building blade-scope-api 5.0.1                                   [11/15]
+[INFO]   from blade-service-api\blade-scope-api\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-scope-api ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-scope-api ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-scope-api ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory D:\workspace\project\SpringBlade\blade-service-api\blade-scope-api\src\main\resources
+[INFO] Copying 1 resource from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-scope-api ---
+[INFO] Generating flattened POM of project org.springblade:blade-scope-api:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-scope-api ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 9 source files with javac [debug target 21] to target\classes
+[INFO] 由于在类路径中发现了一个或多个处理程序，因此启用了
+  批注处理。未来发行版的 javac 可能会禁用批注处理，
+  除非至少按名称指定了一个处理程序 (-processor)，
+  或指定了搜索路径 (--processor-path, --processor-module-path)，
+  或显式启用了批注处理 (-proc:only, -proc:full)。
+  可使用 -Xlint:-options 隐藏此消息。
+  可使用 -proc:none 禁用批注处理。
+[INFO] /D:/workspace/project/SpringBlade/blade-service-api/blade-scope-api/src/main/java/org/springblade/system/cache/ApiScopeCache.java: 某些输入文件使用了未经检查或不安全的操作。
+[INFO] /D:/workspace/project/SpringBlade/blade-service-api/blade-scope-api/src/main/java/org/springblade/system/cache/ApiScopeCache.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] 
+[INFO] -------------------< org.springblade:blade-service >--------------------
+[INFO] Building blade-service 5.0.1                                     [12/15]
+[INFO]   from blade-service\pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-service ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-service ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-service ---
+[INFO] Generating flattened POM of project org.springblade:blade-service:pom:5.0.1...
+[INFO] 
+[INFO] --------------------< org.springblade:blade-system >--------------------
+[INFO] Building blade-system 5.0.1                                      [13/15]
+[INFO]   from blade-service\blade-system\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-system ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-system ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-system ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] Copying 5 resources from src\main\resources to target\classes
+[INFO] Copying 18 resources from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-system ---
+[INFO] Generating flattened POM of project org.springblade:blade-system:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-system ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 100 source files with javac [debug target 21] to target\classes
+[INFO] 由于在类路径中发现了一个或多个处理程序，因此启用了
+  批注处理。未来发行版的 javac 可能会禁用批注处理，
+  除非至少按名称指定了一个处理程序 (-processor)，
+  或指定了搜索路径 (--processor-path, --processor-module-path)，
+  或显式启用了批注处理 (-proc:only, -proc:full)。
+  可使用 -Xlint:-options 隐藏此消息。
+  可使用 -proc:none 禁用批注处理。
+[INFO] /D:/workspace/project/SpringBlade/blade-service/blade-system/src/main/java/org/springblade/system/feign/DataScopeClient.java: D:\workspace\project\SpringBlade\blade-service\blade-system\src\main\java\org\springblade\system\feign\DataScopeClient.java使用或覆盖了已过时的 API。
+[INFO] /D:/workspace/project/SpringBlade/blade-service/blade-system/src/main/java/org/springblade/system/feign/DataScopeClient.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] -------------------< org.springblade:blade-demo-api >-------------------
+[INFO] Building blade-demo-api 5.0.1                                    [14/15]
+[INFO]   from blade-service-api\blade-demo-api\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-demo-api ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-demo-api ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-demo-api ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory D:\workspace\project\SpringBlade\blade-service-api\blade-demo-api\src\main\resources
+[INFO] Copying 1 resource from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-demo-api ---
+[INFO] Generating flattened POM of project org.springblade:blade-demo-api:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-demo-api ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] ---------------------< org.springblade:blade-demo >---------------------
+[INFO] Building blade-demo 5.0.1                                        [15/15]
+[INFO]   from blade-service\blade-demo\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (ban-jackson3-autoconfigure) @ blade-demo ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- directory:1.0:highest-basedir (directories) @ blade-demo ---
+[INFO] Highest basedir set to: D:\workspace\project\SpringBlade
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ blade-demo ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] Copying 6 resources from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\java to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.3:flatten (flatten) @ blade-demo ---
+[INFO] Generating flattened POM of project org.springblade:blade-demo:jar:5.0.1...
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ blade-demo ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 15 source files with javac [debug target 21] to target\classes
+[INFO] 由于在类路径中发现了一个或多个处理程序，因此启用了
+  批注处理。未来发行版的 javac 可能会禁用批注处理，
+  除非至少按名称指定了一个处理程序 (-processor)，
+  或指定了搜索路径 (--processor-path, --processor-module-path)，
+  或显式启用了批注处理 (-proc:only, -proc:full)。
+  可使用 -Xlint:-options 隐藏此消息。
+  可使用 -proc:none 禁用批注处理。
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for SpringBlade 5.0.1:
+[INFO] 
+[INFO] SpringBlade ........................................ SUCCESS [  0.682 s]
+[INFO] blade-common ....................................... SUCCESS [  0.718 s]
+[INFO] blade-service-api .................................. SUCCESS [  0.075 s]
+[INFO] blade-user-api ..................................... SUCCESS [  0.089 s]
+[INFO] blade-system-api ................................... SUCCESS [  0.093 s]
+[INFO] blade-authorization-server ......................... SUCCESS [  0.254 s]
+[INFO] blade-gateway ...................................... SUCCESS [  0.250 s]
+[INFO] blade-ops .......................................... SUCCESS [  0.029 s]
+[INFO] blade-admin ........................................ SUCCESS [  0.273 s]
+[INFO] blade-dict-api ..................................... SUCCESS [  0.138 s]
+[INFO] blade-scope-api .................................... SUCCESS [  2.306 s]
+[INFO] blade-service ...................................... SUCCESS [  0.040 s]
+[INFO] blade-system ....................................... SUCCESS [  3.744 s]
+[INFO] blade-demo-api ..................................... SUCCESS [  0.138 s]
+[INFO] blade-demo ......................................... SUCCESS [  1.476 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10.539 s
+[INFO] Finished at: 2026-10-13T12:49:32+08:00
+[INFO] ------------------------------------------------------------------------

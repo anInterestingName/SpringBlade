@@ -29,16 +29,16 @@ import java.util.List;
 public class IDataScopeClientFallback implements IDataScopeClient {
 	@Override
 	public DataScopeModel getDataScopeByMapper(String mapperId, String roleId) {
-		return null;
+		throw new IllegalStateException("数据权限服务不可用");
 	}
 
 	@Override
 	public DataScopeModel getDataScopeByCode(String code) {
-		return null;
+		throw new IllegalStateException("数据权限服务不可用");
 	}
 
 	@Override
 	public List<Long> getDeptAncestors(Long deptId) {
-		return null;
+		throw new IllegalStateException("部门归属服务不可用");
 	}
 }

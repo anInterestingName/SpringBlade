@@ -1,0 +1,9 @@
+server:
+  forward-headers-strategy: framework
+
+blade:
+  bff:
+    cookie-secure: ${AUTHORIZATION_COOKIE_SECURE:true}
+    issuer: ${AUTHORIZATION_ISSUER}
+    redirect-uri: ${AUTHORIZATION_REDIRECT_URI}
+    frontend-uri: ${BFF_FRONTEND_URI}

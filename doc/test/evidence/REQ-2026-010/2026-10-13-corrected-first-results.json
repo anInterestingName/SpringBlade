@@ -1,0 +1,163 @@
+{
+  "ExecutedAtUtc": "2026-10-13T02:47:13.9875253Z",
+  "ScriptVersion": "0.9",
+  "DataPrefix": "auth-rq10-20261013024708-",
+  "PowerShell": "7.6.6",
+  "Results": [
+    {
+      "Id": "TC-001",
+      "Description": "构建与敏感配置门禁",
+      "Status": "FAIL",
+      "Details": "认证配置含固定凭据默认值：blade-gateway/src/main/resources/application.yml"
+    },
+    {
+      "Id": "TC-002",
+      "Description": "Discovery 与 JWKS 公钥边界",
+      "Status": "PASS",
+      "Details": "Discovery HTTP 200、issuer/端点/S256 匹配；JWKS 1 个 RSA 公钥，无私钥字段"
+    },
+    {
+      "Id": "TC-003",
+      "Description": "客户端管理校验入口",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 用户登录 连接失败"
+    },
+    {
+      "Id": "TC-004",
+      "Description": "授权码与 PKCE 正常流程",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 用户登录 连接失败"
+    },
+    {
+      "Id": "TC-005",
+      "Description": "PKCE、回调与授权码一次性",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 用户登录 连接失败"
+    },
+    {
+      "Id": "TC-006",
+      "Description": "真实密码与租户拒绝",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 负向登录 password 连接失败"
+    },
+    {
+      "Id": "TC-007",
+      "Description": "限流、TTL 和可信来源",
+      "Status": "BLOCK",
+      "Details": "未提供独立测试来源与限流计数清理夹具；不对共享本地 IP 连续失败以免锁定其他用户；不再无条件 PASS"
+    },
+    {
+      "Id": "TC-008",
+      "Description": "client_credentials 与 scope",
+      "Status": "PASS",
+      "Details": "实际服务令牌签发=200、非法 scope=400/invalid_scope、资源读取=200、缺 scope=403、错误 audience=401"
+    },
+    {
+      "Id": "TC-009",
+      "Description": "Refresh Token 轮换与令牌族重用",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 用户登录 连接失败"
+    },
+    {
+      "Id": "TC-010",
+      "Description": "撤销与内省",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 用户登录 连接失败"
+    },
+    {
+      "Id": "TC-011",
+      "Description": "BFF 会话隔离与 no-store",
+      "Status": "BLOCK",
+      "Details": "BLOCK: BFF 登录入口 连接失败"
+    },
+    {
+      "Id": "TC-012",
+      "Description": "BFF CSRF 与退出",
+      "Status": "BLOCK",
+      "Details": "BLOCK: BFF 登录入口 连接失败"
+    },
+    {
+      "Id": "TC-013",
+      "Description": "资源端 JWT 拒绝与正常访问",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 用户登录 连接失败"
+    },
+    {
+      "Id": "TC-014",
+      "Description": "网关旧路由和内部隔离",
+      "Status": "BLOCK",
+      "Details": "BLOCK: BFF 登录入口 连接失败"
+    },
+    {
+      "Id": "TC-015",
+      "Description": "内部契约 scope 与依赖降级",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 用户登录 连接失败"
+    },
+    {
+      "Id": "TC-016",
+      "Description": "MySQL/Redis 故障恢复",
+      "Status": "BLOCK",
+      "Details": "未对共享测试基础设施执行停机/故障注入；独立实例、快照和恢复夹具待准备，配置存在不能证明恢复通过"
+    },
+    {
+      "Id": "TC-017",
+      "Description": "外部 JWK 文件与错误启动配置",
+      "Status": "BLOCK",
+      "Details": "外部 JWK 文件与实际 JWKS kid 已匹配；错误权限/kid/算法/长度的隔离启动与替换重启尚未执行"
+    },
+    {
+      "Id": "TC-018",
+      "Description": "落盘密文与敏感日志",
+      "Status": "BLOCK",
+      "Details": "实际 AuthorizationCodec 的 AES-GCM/v1 静态检查通过；MySQL/Redis 本轮数据与运行日志尚未取证，不以源码关键字替代落盘检查；不涉及脱敏功能建设"
+    },
+    {
+      "Id": "TC-019",
+      "Description": "MySQL 全量、升级、幂等与回滚",
+      "Status": "BLOCK",
+      "Details": "两份 SQL 客户端摘要格式静态检查通过；独立空库/存量快照、真实重复执行与回滚未执行"
+    },
+    {
+      "Id": "TC-020",
+      "Description": "真实授权码和刷新并发",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 用户登录 连接失败"
+    },
+    {
+      "Id": "TC-021",
+      "Description": "健康、指标与告警",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 健康端点拒绝未认证请求，未取得 UP 证据；需运维认证/专用探针"
+    },
+    {
+      "Id": "TC-022",
+      "Description": "双版本灰度和回滚",
+      "Status": "BLOCK",
+      "Details": "未切换用户正在使用的应用版本；可回滚部署夹具和独立入口待准备，配置存在不能证明演练通过"
+    },
+    {
+      "Id": "TC-023",
+      "Description": "TokenRelay 与伪造身份头",
+      "Status": "BLOCK",
+      "Details": "BLOCK: BFF 登录入口 连接失败"
+    },
+    {
+      "Id": "TC-024",
+      "Description": "Feign 用户与服务 Token 传播",
+      "Status": "FAIL",
+      "Details": "Feign 多 scope 配置逐项覆盖，只保留最后一个 scope"
+    },
+    {
+      "Id": "TC-025",
+      "Description": "JWT 与现有 BladeUser 权限字段",
+      "Status": "BLOCK",
+      "Details": "BLOCK: 用户登录 连接失败"
+    }
+  ],
+  "Cleanup": {
+    "Failed": 0,
+    "Registered": 1
+  },
+  "SessionCleanupFailed": false
+}

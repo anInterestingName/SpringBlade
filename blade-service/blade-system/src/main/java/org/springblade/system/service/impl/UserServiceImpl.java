@@ -20,8 +20,8 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import lombok.AllArgsConstructor;
 import org.springblade.common.cache.CacheNames;
+import org.springblade.system.security.PasswordPolicy;
 import org.springblade.common.constant.CommonConstant;
 import org.springblade.core.cache.constant.CacheConstant;
 import org.springblade.core.cache.utils.CacheUtil;
@@ -58,6 +58,8 @@ import org.springblade.system.service.IUserService;
 import org.springblade.system.wrapper.UserWrapper;
 import org.springframework.stereotype.Service;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
@@ -74,8 +76,8 @@ import static org.springblade.core.tenant.TenantGuard.EntityType.USER;
  * @author Chill
  */
 @Service
-@AllArgsConstructor
 public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implements IUserService {
+	// 新认证链路在内部认证成功后按需迁移旧摘要，旧业务接口保持兼容。
 	private static final String GUEST_NAME = "guest";
 	private static final String MINUS_ONE = "-1";
 	private static final String USER_ROLE_ALIAS = "user";
@@ -87,6 +89,16 @@ public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implement
 	private ITenantService tenantService;
 	private IUserOauthService userOauthService;
 	private BladeRedis bladeRedis;
+	private final PasswordEncoder authenticationPasswordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
+	public UserServiceImpl(ISysClient sysClient, IRoleService roleService, ITenantService tenantService,
+		IUserOauthService userOauthService, BladeRedis bladeRedis) {
+		this.sysClient = sysClient;
+		this.roleService = roleService;
+		this.tenantService = tenantService;
+		this.userOauthService = userOauthService;
+		this.bladeRedis = bladeRedis;
+	}
 
 	@Override
 	public boolean submit(User user) {
@@ -120,7 +132,8 @@ public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implement
 	private boolean doSubmit(User user) {
 		CacheUtil.clear(CacheConstant.USER_CACHE);
 		if (Func.isNotEmpty(user.getPassword())) {
-			user.setPassword(DigestUtil.encrypt(user.getPassword()));
+			PasswordPolicy.validateEncoding(user.getPassword());
+			user.setPassword(authenticationPasswordEncoder.encode(user.getPassword()));
 		}
 		if (Func.isNotEmpty(user.getAccount())) {
 			Long cnt = baseMapper.selectCount(Wrappers.<User>query().lambda()
@@ -193,15 +206,62 @@ public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implement
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public UserInfo userInfo(String tenantId, String account, String password) {
+		return authenticationInfo(tenantId, account, password, true);
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public UserInfo authenticateUser(String tenantId, String account, String password) {
+		return authenticationInfo(tenantId, account, password, false);
+	}
+
+	private UserInfo authenticationInfo(String tenantId, String account, String password, boolean legacyDigestAllowed) {
 		UserInfo userInfo = new UserInfo();
-		User user = baseMapper.getUser(tenantId, account, password);
+		User user = baseMapper.selectOne(Wrappers.<User>lambdaQuery()
+			.eq(User::getTenantId, tenantId).eq(User::getAccount, account)
+			.eq(User::getStatus, 1).eq(User::getIsDeleted, BladeConstant.DB_NOT_DELETED));
+		if (user != null && !matchesAuthenticationPassword(user.getPassword(), password, legacyDigestAllowed)) {
+			user = null;
+		}
+		if (user != null && isLegacyPassword(user.getPassword()) && password != null
+			&& (!legacyDigestAllowed || !password.matches(PASSWORD_DIGEST_PATTERN))) {
+			// 只有拿到真实密码的内部认证请求才能完成一次性迁移，旧摘要请求不会被升级。
+			PasswordPolicy.validateEncoding(password);
+			String encoded = authenticationPasswordEncoder.encode(password);
+			int migrated = baseMapper.update(null, Wrappers.<User>lambdaUpdate()
+				.eq(User::getId, user.getId()).eq(User::getTenantId, tenantId).eq(User::getPassword, user.getPassword())
+				.set(User::getPassword, encoded));
+			if (migrated != 1) throw new ServiceException("凭据已变化，请重新登录");
+			user.setPassword(encoded);
+			CacheUtil.clear(CacheConstant.USER_CACHE);
+		}
 		userInfo.setUser(user);
 		if (Func.isNotEmpty(user)) {
 			List<String> roleAlias = baseMapper.getRoleAlias(Func.toStrArray(user.getRoleId()));
 			userInfo.setRoles(roleAlias);
 		}
 		return userInfo;
+	}
+
+	private boolean matchesAuthenticationPassword(String stored, String supplied, boolean legacyDigestAllowed) {
+		if (stored == null || supplied == null || supplied.isBlank()) {
+			return false;
+		}
+		if (stored.startsWith("{")) {
+			try {
+				return authenticationPasswordEncoder.matches(supplied, stored);
+			} catch (IllegalArgumentException ignored) {
+				return false;
+			}
+		}
+		return isLegacyPassword(stored) && ((legacyDigestAllowed && supplied.matches(PASSWORD_DIGEST_PATTERN)
+			&& stored.equalsIgnoreCase(supplied)) || stored.equalsIgnoreCase(DigestUtil.encrypt(supplied)));
+	}
+
+	private boolean isLegacyPassword(String stored) {
+		return stored != null && stored.matches(PASSWORD_DIGEST_PATTERN);
 	}
 
 	@Override
@@ -245,22 +305,27 @@ public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implement
 		List<Long> idList = Func.toLongList(userIds);
 		TenantGuard.verifyBatch(this, idList, USER);
 		User user = new User();
-		user.setPassword(DigestUtil.encrypt(CommonConstant.DEFAULT_PASSWORD));
+		user.setPassword(authenticationPasswordEncoder.encode(CommonConstant.DEFAULT_PASSWORD));
 		user.setUpdateTime(DateUtil.now());
 		return this.update(user, Wrappers.<User>update().lambda().in(User::getId, idList));
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public boolean updatePassword(Long userId, String oldPassword, String newPassword, String newPassword1) {
-		CacheUtil.clear(CacheConstant.USER_CACHE);
 		User user = getById(userId);
-		if (!newPassword.equals(newPassword1)) {
-			throw new ServiceException("请输入正确的确认密码!");
+		if (user == null || !Objects.equals(user.getTenantId(), SecureUtil.getTenantId()) || !Integer.valueOf(1).equals(user.getStatus())) {
+			throw new ServiceException("用户身份无效");
 		}
-		if (!user.getPassword().equals(DigestUtil.encrypt(oldPassword))) {
-			throw new ServiceException("原密码不正确!");
-		}
-		return this.update(Wrappers.<User>update().lambda().set(User::getPassword, DigestUtil.encrypt(newPassword)).eq(User::getId, userId));
+		if (newPassword == null || !newPassword.equals(newPassword1)) throw new ServiceException("请输入正确的确认密码");
+		PasswordPolicy.validateNewPassword(user.getAccount(), newPassword);
+		if (!matchesAuthenticationPassword(user.getPassword(), oldPassword, false)) throw new ServiceException("原密码不正确");
+		boolean updated = this.update(Wrappers.<User>lambdaUpdate()
+			.eq(User::getId, userId).eq(User::getTenantId, user.getTenantId()).eq(User::getPassword, user.getPassword())
+			.set(User::getPassword, authenticationPasswordEncoder.encode(newPassword)).set(User::getUpdateTime, DateUtil.now()));
+		if (!updated) throw new ServiceException("密码已变化，请重新提交");
+		CacheUtil.clear(CacheConstant.USER_CACHE);
+		return true;
 	}
 
 	@Override
@@ -353,8 +418,7 @@ public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implement
 	public boolean register(UserRegisterCommand command) {
 		if (command == null || !StringUtil.isNotBlank(command.getTenantId())
 			|| !StringUtil.isNotBlank(command.getAccount()) || !StringUtil.isNotBlank(command.getName())
-			|| !StringUtil.isNotBlank(command.getPasswordDigest())
-			|| !command.getPasswordDigest().matches(PASSWORD_DIGEST_PATTERN)) {
+			|| !StringUtil.isNotBlank(command.getPassword())) {
 			throw new ServiceException(RegisterResultCode.REGISTER_REQUEST_INVALID);
 		}
 
@@ -386,7 +450,8 @@ public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implement
 		user.setTenantId(tenantId);
 		user.setAccount(account);
 		user.setName(name);
-		user.setPassword(command.getPasswordDigest());
+		PasswordPolicy.validateNewPassword(account, command.getPassword());
+		user.setPassword(authenticationPasswordEncoder.encode(command.getPassword()));
 		user.setRoleId(String.valueOf(roles.get(0).getId()));
 		user.setDeptId(MINUS_ONE);
 		user.setPostId(MINUS_ONE);

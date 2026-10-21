@@ -17,12 +17,14 @@ package org.springblade.system.user.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 认证服务传递给用户服务的受控注册命令。
+ * system 注册编排向用户服务提交的受控命令。
  *
  * @author Codex
  */
@@ -42,6 +44,8 @@ public class UserRegisterCommand implements Serializable {
 	@Schema(description = "用户昵称", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String name;
 
-	@Schema(description = "现有摘要格式的密码")
-	private String passwordDigest;
+	@Schema(description = "真实密码，仅在system内部编码使用")
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	@ToString.Exclude
+	private String password;
 }

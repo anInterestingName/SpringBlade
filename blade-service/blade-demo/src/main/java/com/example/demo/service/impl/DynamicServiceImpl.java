@@ -1,6 +1,6 @@
 package com.example.demo.service.impl;
 
-import com.baomidou.dynamic.datasource.annotation.DS;
+// import com.baomidou.dynamic.datasource.annotation.DS;
 import com.example.demo.entity.Notice;
 import com.example.demo.mapper.NoticeMapper;
 import com.example.demo.service.IDynamicService;
@@ -23,7 +23,7 @@ public class DynamicServiceImpl extends BaseServiceImpl<NoticeMapper, Notice> im
 	}
 
 	@Override
-	@DS("slave")
+	// @DS("slave")
 	public List<Notice> slaveList() {
 		return this.list();
 	}

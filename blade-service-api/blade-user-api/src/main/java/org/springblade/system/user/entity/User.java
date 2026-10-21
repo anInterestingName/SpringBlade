@@ -19,6 +19,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -61,6 +63,8 @@ public class User extends TenantEntity {
 	/**
 	 * 密码
 	 */
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	@ToString.Exclude
 	private String password;
 	/**
 	 * 昵称

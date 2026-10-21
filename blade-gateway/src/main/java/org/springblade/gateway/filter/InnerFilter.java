@@ -53,7 +53,6 @@ import java.util.List;
  * @author Chill
  */
 @Slf4j
-@Component
 @AllArgsConstructor
 public class InnerFilter implements GlobalFilter, Ordered {
 
@@ -181,7 +180,7 @@ public class InnerFilter implements GlobalFilter, Ordered {
 
 	@Override
 	public int getOrder() {
-		// 晚于 RequestFilter(-1000) 以取到原始路径，早于 AuthFilter(-100) 以免对被拒路径做无谓鉴权
+		// 在路由鉴权前拒绝外部访问内部 Feign 前缀
 		return -150;
 	}
 

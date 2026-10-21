@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springblade</groupId>
+    <artifactId>SpringBlade</artifactId>
+    <version>${revision}</version>
+  </parent>
+  <artifactId>blade-authorization-server</artifactId>
+  <name>${project.artifactId}</name>
+  <description>OAuth2/OIDC 授权服务器</description>
+  <dependencies>
+    <!-- 与其他微服务一致，完整接入 Blade 公共启动、配置、Redis、MyBatis、Jackson 和云能力。 -->
+    <dependency>
+      <groupId>org.springblade</groupId>
+      <artifactId>blade-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springblade</groupId>
+      <artifactId>blade-core-boot</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springblade</groupId>
+      <artifactId>blade-user-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springblade</groupId>
+      <artifactId>blade-system-api</artifactId>
+    </dependency>
+    <!-- OAuth2/OIDC 协议能力叠加在完整微服务运行时之上。 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security-oauth2-authorization-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-oauth2-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-session-data-redis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+</project>

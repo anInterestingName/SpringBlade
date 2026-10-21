@@ -42,6 +42,9 @@ public class UserWrapper extends BaseEntityWrapper<User, UserVO> {
 		List<String> roleName = SysCache.getRoleNames(user.getRoleId());
 		List<String> deptName = SysCache.getDeptNames(user.getDeptId());
 		userVO.setRoleName(Func.join(roleName));
+		userVO.setRoles(Func.toLongList(user.getRoleId()).stream().map(SysCache::getRole)
+			.filter(role -> role != null && user.getTenantId().equals(role.getTenantId()) && Integer.valueOf(0).equals(role.getIsDeleted()))
+			.map(org.springblade.system.entity.Role::getRoleAlias).filter(alias -> alias != null && !alias.isBlank()).distinct().toList());
 		userVO.setDeptName(Func.join(deptName));
 		userVO.setSexName(DictCache.getValue("sex", Func.toInt(user.getSex())));
 		return userVO;
